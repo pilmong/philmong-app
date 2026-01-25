@@ -5,7 +5,7 @@ import { decrypt } from '@/lib/auth';
 const protectedRoutes = ['/admin'];
 const publicRoutes = ['/login', '/lunch/order']; // 런치 주문 페이지는 공개
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
     // 2. 현재 경로가 보호된 경로인지 확인
     const path = req.nextUrl.pathname;
     const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route));
