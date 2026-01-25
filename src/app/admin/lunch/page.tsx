@@ -1,7 +1,7 @@
 'use server';
 
 import Link from 'next/link';
-import { Users, Calendar, ClipboardList, TrendingUp, Settings } from 'lucide-react';
+import { Users, Calendar, ClipboardList, TrendingUp, Settings, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { getCurrentUser } from '@/actions/auth';
