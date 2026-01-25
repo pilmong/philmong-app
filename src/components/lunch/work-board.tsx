@@ -203,21 +203,53 @@ export function WorkBoard({ date, dailyMenu, orders, allClients, user }: WorkBoa
                             <Utensils className="h-5 w-5 text-orange-600" /> 도시락 조리 가이드
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4">
+                    <CardContent className="pt-4 px-4 pb-4">
                         {lunchboxLayout ? (
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border">
-                                    <div className="text-[10px] text-slate-500 font-bold uppercase">Main</div>
-                                    <div className="text-lg font-bold">{lunchboxLayout.main || '-'}</div>
-                                </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border">
-                                    <div className="text-[10px] text-slate-500 font-bold uppercase">Soup</div>
-                                    <div className="text-lg font-bold">{lunchboxLayout.soup || '-'}</div>
-                                </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border col-span-2 grid grid-cols-3 gap-2">
-                                    <div><div className="text-[10px] text-slate-500">반찬1</div><div className="font-medium">{lunchboxLayout.banchan1 || '-'}</div></div>
-                                    <div><div className="text-[10px] text-slate-500">반찬2</div><div className="font-medium">{lunchboxLayout.banchan2 || '-'}</div></div>
-                                    <div><div className="text-[10px] text-slate-500">반찬3</div><div className="font-medium">{lunchboxLayout.banchan3 || '-'}</div></div>
+                            <div className="relative w-full aspect-[265/195] max-w-[400px] mx-auto bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shadow-inner border">
+                                {/* 용기 배경 이미지 */}
+                                <img
+                                    src="/assets/lunchbox-tray.jpg"
+                                    alt="Lunchbox Tray"
+                                    className="w-full h-full object-cover opacity-80 mix-blend-multiply dark:mix-blend-overlay"
+                                />
+
+                                {/* 메뉴 오버레이 - 라벨 위치에 맞춰 배치 */}
+                                <div className="absolute inset-0 p-2 pointer-events-none">
+                                    {/* 반찬 1 */}
+                                    <div className="absolute top-[8%] left-[6%] w-[18%] text-center">
+                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">반찬1</div>
+                                        <div className="text-xs font-bold text-slate-900 bg-white/60 p-1 rounded backdrop-blur-sm line-clamp-2">{lunchboxLayout.banchan1 || '-'}</div>
+                                    </div>
+
+                                    {/* 메인 */}
+                                    <div className="absolute top-[8%] left-[28%] w-[22%] text-center">
+                                        <div className="text-[10px] font-black text-orange-500 leading-none mb-1">메인</div>
+                                        <div className="text-sm font-black text-slate-900 bg-white/80 p-1 rounded backdrop-blur-sm border border-orange-200 line-clamp-2">{lunchboxLayout.main || '-'}</div>
+                                    </div>
+
+                                    {/* 반찬 2 */}
+                                    <div className="absolute top-[8%] left-[53%] w-[18%] text-center">
+                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">반찬2</div>
+                                        <div className="text-xs font-bold text-slate-900 bg-white/60 p-1 rounded backdrop-blur-sm line-clamp-2">{lunchboxLayout.banchan2 || '-'}</div>
+                                    </div>
+
+                                    {/* 반찬 3 */}
+                                    <div className="absolute top-[8%] left-[75%] w-[18%] text-center">
+                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">반찬3</div>
+                                        <div className="text-xs font-bold text-slate-900 bg-white/60 p-1 rounded backdrop-blur-sm line-clamp-2">{lunchboxLayout.banchan3 || '-'}</div>
+                                    </div>
+
+                                    {/* 밥 (왼쪽 아래 큰 칸) */}
+                                    <div className="absolute top-[55%] left-[15%] w-[25%] text-center">
+                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">밥</div>
+                                        <div className="text-sm font-bold text-slate-700 bg-white/40 p-1 rounded">흰쌀밥</div>
+                                    </div>
+
+                                    {/* 국 (오른쪽 아래 둥근 칸) */}
+                                    <div className="absolute top-[55%] left-[58%] w-[28%] text-center">
+                                        <div className="text-[10px] font-black text-blue-500 leading-none mb-1">오늘의 국</div>
+                                        <div className="text-sm font-black text-slate-900 bg-blue-50/80 p-2 rounded-full border border-blue-200 backdrop-blur-sm line-clamp-2">{lunchboxLayout.soup || '-'}</div>
+                                    </div>
                                 </div>
                             </div>
                         ) : (
