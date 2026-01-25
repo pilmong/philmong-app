@@ -86,37 +86,78 @@ export function MenuBuilder({ initialData, date }: MenuBuilderProps) {
                         </CardHeader>
                         <CardContent className="flex justify-center p-8 bg-slate-50 dark:bg-slate-950">
                             {/* Lunchbox Visual UI */}
-                            <div className="w-full max-w-2xl aspect-[265/195] bg-[#3d2117] rounded-xl p-4 shadow-2xl relative border-8 border-[#2d1a12]">
-                                <div className="grid grid-cols-4 gap-3 h-[45%] mb-4">
-                                    {['banchan1', 'main', 'banchan2', 'banchan3'].map((key) => (
-                                        <div key={key} className="bg-[#2d1a12] rounded-lg p-2 flex flex-col items-center justify-center border border-[#4d3228]">
-                                            <span className="text-[10px] text-slate-500 mb-1">
-                                                {key === 'banchan1' ? '반찬1' : key === 'main' ? '메인' : key === 'banchan2' ? '반찬2' : '반찬3'}
-                                            </span>
-                                            <input
-                                                className="bg-transparent text-white text-center text-sm w-full outline-none focus:text-yellow-400"
-                                                value={lunchbox[key as keyof typeof lunchbox]}
-                                                onChange={(e) => setLunchbox({ ...lunchbox, [key]: e.target.value })}
-                                                placeholder="..."
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="grid grid-cols-2 gap-3 h-[45%]">
-                                    <div className="bg-[#2d1a12] rounded-lg p-4 flex flex-col items-center justify-center border border-[#4d3228]">
-                                        <span className="text-xs text-slate-500 mb-2 font-bold">밥</span>
+                            <div className="relative w-full aspect-[265/195] max-w-[600px] mx-auto bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden shadow-2xl border-4 border-slate-200 dark:border-slate-800">
+                                {/* 용기 배경 이미지 */}
+                                <img
+                                    src="/assets/lunchbox-tray.jpg"
+                                    alt="Lunchbox Tray"
+                                    className="w-full h-full object-cover opacity-60 mix-blend-multiply dark:mix-blend-overlay"
+                                />
+
+                                {/* 입력 필드 오버레이 */}
+                                <div className="absolute inset-0 p-4">
+                                    {/* 반찬 1 */}
+                                    <div className="absolute top-[8%] left-[6%] w-[18%] flex flex-col items-center">
+                                        <span className="text-[10px] font-black text-slate-500 mb-1">반찬1</span>
+                                        <Input
+                                            className="h-auto py-1 px-2 text-center text-xs font-bold border-slate-300 bg-white/80 focus:bg-white"
+                                            value={lunchbox.banchan1}
+                                            onChange={(e) => setLunchbox({ ...lunchbox, banchan1: e.target.value })}
+                                            placeholder="..."
+                                        />
+                                    </div>
+
+                                    {/* 메인 */}
+                                    <div className="absolute top-[8%] left-[28%] w-[22%] flex flex-col items-center">
+                                        <span className="text-[10px] font-black text-orange-600 mb-1">메인</span>
+                                        <Input
+                                            className="h-auto py-2 px-2 text-center text-sm font-black border-orange-300 bg-orange-50/90 focus:bg-white"
+                                            value={lunchbox.main}
+                                            onChange={(e) => setLunchbox({ ...lunchbox, main: e.target.value })}
+                                            placeholder="메인 메뉴"
+                                        />
+                                    </div>
+
+                                    {/* 반찬 2 */}
+                                    <div className="absolute top-[8%] left-[53%] w-[18%] flex flex-col items-center">
+                                        <span className="text-[10px] font-black text-slate-500 mb-1">반찬2</span>
+                                        <Input
+                                            className="h-auto py-1 px-2 text-center text-xs font-bold border-slate-300 bg-white/80 focus:bg-white"
+                                            value={lunchbox.banchan2}
+                                            onChange={(e) => setLunchbox({ ...lunchbox, banchan2: e.target.value })}
+                                            placeholder="..."
+                                        />
+                                    </div>
+
+                                    {/* 반찬 3 */}
+                                    <div className="absolute top-[8%] left-[75%] w-[18%] flex flex-col items-center">
+                                        <span className="text-[10px] font-black text-slate-500 mb-1">반찬3</span>
+                                        <Input
+                                            className="h-auto py-1 px-2 text-center text-xs font-bold border-slate-300 bg-white/80 focus:bg-white"
+                                            value={lunchbox.banchan3}
+                                            onChange={(e) => setLunchbox({ ...lunchbox, banchan3: e.target.value })}
+                                            placeholder="..."
+                                        />
+                                    </div>
+
+                                    {/* 밥 */}
+                                    <div className="absolute top-[55%] left-[10%] w-[35%] flex flex-col items-center">
+                                        <span className="text-[10px] font-black text-slate-500 mb-2">밥 구성</span>
                                         <textarea
-                                            className="bg-transparent text-white text-center text-base w-full outline-none resize-none h-16 focus:text-yellow-400"
+                                            className="w-full h-16 bg-white/60 border border-slate-200 rounded-lg p-2 text-center text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-slate-400 resize-none"
                                             value={lunchbox.rice}
                                             onChange={(e) => setLunchbox({ ...lunchbox, rice: e.target.value })}
                                         />
                                     </div>
-                                    <div className="bg-[#2d1a12] rounded-full aspect-square p-4 flex flex-col items-center justify-center border border-[#4d3228] mx-auto w-[80%]">
-                                        <span className="text-xs text-slate-500 mb-2 font-bold">국</span>
-                                        <input
-                                            className="bg-transparent text-white text-center text-base w-full outline-none focus:text-yellow-400"
+
+                                    {/* 국 */}
+                                    <div className="absolute top-[55%] left-[55%] w-[35%] flex flex-col items-center">
+                                        <span className="text-[10px] font-black text-blue-600 mb-2">오늘의 국</span>
+                                        <Input
+                                            className="h-auto py-2 px-4 text-center text-base font-black border-blue-200 bg-blue-50/90 focus:bg-white rounded-full"
                                             value={lunchbox.soup}
                                             onChange={(e) => setLunchbox({ ...lunchbox, soup: e.target.value })}
+                                            placeholder="국(Soup)"
                                         />
                                     </div>
                                 </div>
