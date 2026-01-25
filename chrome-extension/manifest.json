@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Philmong Order Spy",
+    "version": "1.0",
+    "description": "네이버 주문 텍스트를 필몽 어드민으로 자동 전송합니다.",
+    "permissions": [
+        "contextMenus",
+        "scripting",
+        "activeTab"
+    ],
+    "host_permissions": [
+        "http://localhost:3000/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    }
+}

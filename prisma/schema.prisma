@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Product {
+  id            String    @id @default(uuid())
+  type          String    // REGULAR, DAILY, SPECIAL, LUNCHBOX
+  category      String?   // For Regular: 요리곁들임, 국물곁들임 etc.
+  name          String
+  price         Int
+  status        String    @default("ACTIVE") // ACTIVE, INACTIVE, PENDING
+  workType      String?   // SUBDIVISION (소분), COOKING (조리)
+  description   String?   // For Daily/Special
+  targetDate    DateTime? // For Daily/Special
+  displayQty    Int?      // For Regular
+  productionQty Int?      // For Daily/Special
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Order {
+  id              String    @id @default(uuid())
+  type            String    // RESERVATION, ORDER
+  channel         String    // NAVER, PHONE, TEXT, BAND, INSTA, WALK_IN
+  customerName    String
+  customerContact String?
+  pickupType      String    // PICKUP, DELIVERY
+  address         String?
+  deliveryFee     Int?
+  pickupDate      DateTime?
+  pickupTime      String?
+  request         String?
+  items           String    // JSON string for order items
+  totalPrice      Int       @default(0)
+  status          String    @default("PENDING")
+  memo            String?   // Raw text or internal notes
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// --- 런치 납품 관리 시스템 (신규) ---
+
+model LunchClient {
+  id                String       @id @default(uuid())
+  name              String       // 고객사명
+  contactName       String?      // 담당자 성함
+  contactNumber     String?      // 담당자 연락처
+  address           String?      // 배달 주소
+  defaultStaffCount Int          @default(0)
+  deadlineTime      String       @default("10:00") // 입력 마감 시간
+  lunchboxPrice     Int          @default(0)      // 고객사별 도시락 단가
+  saladPrice        Int          @default(0)      // 고객사별 샐러드 단가
+  paymentType       String       @default("DAILY") // DAILY (일일), PERIODIC (기간별)
+  status            String       @default("ACTIVE") // ACTIVE, INACTIVE
+  memo              String?      // 지속적인 요청사항 (Default Memo)
+  orders            LunchOrder[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model LunchDailyMenu {
+  id             String   @id @default(uuid())
+  date           DateTime @unique // 기획 날짜
+  lunchboxLayout String   // JSON: { banchan1: "", main: "", banchan2: "", banchan3: "", rice: "", soup: "" }
+  saladLayout    String   // JSON: { layers: { base: [], middle: [], top: [] } }
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model LunchOrder {
+  id            String      @id @default(uuid())
+  date          DateTime    // 주문 날짜
+  clientId      String
+  client        LunchClient @relation(fields: [clientId], references: [id])
+  lunchboxCount Int         @default(0)
+  saladCount    Int         @default(0)
+  memo          String?
+  status        String      @default("PENDING") // PENDING, PREPARING, DELIVERING, COMPLETED, PAID
+  modifiedBy    String?     // 수정자 정보 (매니저/관리자)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([date, clientId]) // 하루에 고객사당 하나의 주문 행만 존재
+}
+
+model SystemSettings {
+  id                 String   @id @default("default")
+  companyName        String   @default("필몽")
+  companyRegNo       String?  // 사업자번호
+  bankInfo           String?  @default("국민은행 123-456-7890123")
+  defaultLunchboxCost Int     @default(0) // 기본 도시락 원가
+  defaultSaladCost    Int     @default(0) // 기본 샐러드 원가
+  updatedAt          DateTime @updatedAt
+}
+
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String   // Hashed password
+  name        String
+  role        String   @default("KITCHEN") // ADMIN, MANAGER, KITCHEN, PACKING, CLIENT
+  permissions String   @default("[]")      // JSON string: ["DASHBOARD", "ORDERS", "KITCHEN", "SUBDIVISION", "STATS", "LUNCH", "PRODUCTS", "SETTINGS", "USERS"]
+  clientId    String?  // For CLIENT role, linked to LunchClient id
+  status      String   @default("ACTIVE")  // ACTIVE, INACTIVE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

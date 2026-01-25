@@ -1,0 +1,336 @@
+'use client';
+
+import { useState } from 'react';
+import { format, addDays, subDays } from 'date-fns';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { updateLunchOrderStatus } from '@/actions/lunch';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Truck, CheckCircle, Package, Utensils, MessageSquare, Info, ChevronLeft, ChevronRight, Calendar, XCircle, Undo2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface WorkBoardProps {
+    date: Date;
+    dailyMenu: any;
+    orders: any[];
+    user?: any;
+}
+
+export function WorkBoard({ date, dailyMenu, orders, user }: WorkBoardProps) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // 권한 확인 로직 (트리 구조 대응)
+    const permissions = user?.permissions ? (typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions) : [];
+    const isAdmin = user?.role === 'ADMIN';
+    const hasKitchenDocAccess = isAdmin || permissions.includes('LUNCH_KITCHEN_DOC');
+    const hasLabelAccess = isAdmin || permissions.includes('LUNCH_LABELS');
+
+    const handleDateChange = (newDate: Date) => {
+        const dateStr = format(newDate, 'yyyy-MM-dd');
+        router.push(`/admin/lunch/work?date=${dateStr}`);
+    };
+    const totalLunchboxes = orders.reduce((sum, o) => sum + o.lunchboxCount, 0);
+    const totalSalads = orders.reduce((sum, o) => sum + o.saladCount, 0);
+
+    const lunchboxLayout = dailyMenu?.lunchboxLayout ? JSON.parse(dailyMenu.lunchboxLayout) : null;
+    const saladLayout = dailyMenu?.saladLayout ? JSON.parse(dailyMenu.saladLayout) : null;
+
+    const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+        await updateLunchOrderStatus(orderId, newStatus);
+        window.location.reload();
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* Navigation Bar */}
+            <Card className="border-none shadow-sm bg-slate-900 text-white">
+                <CardContent className="py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="hover:bg-slate-800 text-white" onClick={() => handleDateChange(subDays(date, 1))}>
+                            <ChevronLeft className="h-5 w-5" />
+                        </Button>
+                        <div className="flex flex-col items-center min-w-[150px]">
+                            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{format(date, 'EEEE')}</span>
+                            <span className="text-xl font-black">{format(date, 'yyyy년 MM월 dd일')}</span>
+                        </div>
+                        <Button variant="ghost" size="icon" className="hover:bg-slate-800 text-white" onClick={() => handleDateChange(addDays(date, 1))}>
+                            <ChevronRight className="h-5 w-5" />
+                        </Button>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-slate-800 p-1 rounded-lg border border-slate-700">
+                        <Calendar className="h-4 w-4 ml-2 text-slate-400" />
+                        <Input
+                            type="date"
+                            className="bg-transparent border-none text-white focus-visible:ring-0 w-[150px]"
+                            value={format(date, 'yyyy-MM-dd')}
+                            onChange={(e) => handleDateChange(new Date(e.target.value))}
+                        />
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleDateChange(new Date())}
+                            className="text-xs font-bold"
+                        >
+                            오늘로 이동
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Summary Row */}
+            <div className="grid gap-6 md:grid-cols-3">
+                <Card className="bg-blue-600 text-white border-none shadow-lg">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-lg opacity-80">전체 도시락</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-5xl font-black">{totalLunchboxes}</div>
+                    </CardContent>
+                </Card>
+                <Card className="bg-green-600 text-white border-none shadow-lg">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-lg opacity-80">전체 샐러드</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-5xl font-black">{totalSalads}</div>
+                    </CardContent>
+                </Card>
+                <Card className="bg-slate-900 text-white border-none shadow-lg">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-lg opacity-80">배달 완료</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-5xl font-black">
+                            {orders.filter(o => o.status === 'COMPLETED' || o.status === 'PAID').length} / {orders.length}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Quick Actions for Kitchen - 세분화된 권한 체크 */}
+            <div className="flex flex-col md:flex-row gap-4 print:hidden">
+                {hasKitchenDocAccess && (
+                    <Link href={`/admin/lunch/work/kitchen?date=${format(date, 'yyyy-MM-dd')}`} className="flex-1">
+                        <Button variant="outline" className="w-full h-16 text-lg font-bold gap-3 border-orange-200 bg-orange-50/50 hover:bg-orange-100 text-orange-700 shadow-sm">
+                            <Utensils className="h-6 w-6" /> 조리실 작업지시서 보기
+                        </Button>
+                    </Link>
+                )}
+                {hasLabelAccess && (
+                    <Link href={`/admin/lunch/work/labels?date=${format(date, 'yyyy-MM-dd')}`} className="flex-1">
+                        <Button variant="outline" className="w-full h-16 text-lg font-bold gap-3 border-blue-200 bg-blue-50/50 hover:bg-blue-100 text-blue-700 shadow-sm">
+                            <Package className="h-6 w-6" /> 스티커 라벨 출력하기
+                        </Button>
+                    </Link>
+                )}
+            </div>
+
+            {/* Menu Guide Row */}
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card className="border-none shadow-sm">
+                    <CardHeader className="bg-orange-50 dark:bg-orange-900/10">
+                        <CardTitle className="flex items-center gap-2">
+                            <Utensils className="h-5 w-5 text-orange-600" /> 도시락 조리 가이드
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        {lunchboxLayout ? (
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border">
+                                    <div className="text-[10px] text-slate-500 font-bold uppercase">Main</div>
+                                    <div className="text-lg font-bold">{lunchboxLayout.main || '-'}</div>
+                                </div>
+                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border">
+                                    <div className="text-[10px] text-slate-500 font-bold uppercase">Soup</div>
+                                    <div className="text-lg font-bold">{lunchboxLayout.soup || '-'}</div>
+                                </div>
+                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border col-span-2 grid grid-cols-3 gap-2">
+                                    <div><div className="text-[10px] text-slate-500">반찬1</div><div className="font-medium">{lunchboxLayout.banchan1 || '-'}</div></div>
+                                    <div><div className="text-[10px] text-slate-500">반찬2</div><div className="font-medium">{lunchboxLayout.banchan2 || '-'}</div></div>
+                                    <div><div className="text-[10px] text-slate-500">반찬3</div><div className="font-medium">{lunchboxLayout.banchan3 || '-'}</div></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-center text-slate-500 py-8">메뉴 정보가 없습니다.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-sm">
+                    <CardHeader className="bg-green-50 dark:bg-green-900/10">
+                        <CardTitle className="flex items-center gap-2">
+                            <Package className="h-5 w-5 text-green-600" /> 샐러드 토핑 가이드
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        {saladLayout ? (
+                            <div className="space-y-3">
+                                {(['top', 'middle', 'base'] as const).map((layer) => (
+                                    <div key={layer} className="flex gap-2 items-center">
+                                        <Badge variant="outline" className="w-16 justify-center capitalize">{layer}</Badge>
+                                        <div className="flex flex-wrap gap-1">
+                                            {saladLayout.layers[layer].filter(Boolean).map((item: string, i: number) => (
+                                                <Badge key={i} variant="secondary">{item}</Badge>
+                                            ))}
+                                            {!saladLayout.layers[layer].filter(Boolean).length && <span className="text-xs text-slate-400">비어있음</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-center text-slate-500 py-8">메뉴 정보가 없습니다.</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Orders Table */}
+            <Card className="border-none shadow-sm">
+                <CardHeader>
+                    <CardTitle>고객사별 납품 현황</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-900 border-y">
+                                <tr>
+                                    <th className="px-6 py-4">고객사</th>
+                                    <th className="px-6 py-4">주문수량</th>
+                                    <th className="px-6 py-4">상태</th>
+                                    <th className="px-6 py-4 text-right">결제 금액</th>
+                                    <th className="px-6 py-4">추가 메모</th>
+                                    <th className="px-6 py-4 text-right">작업</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {orders.map((order) => {
+                                    const isDaily = order.client.paymentType === 'DAILY';
+                                    const totalPrice = (order.lunchboxCount * order.client.lunchboxPrice) + (order.saladCount * order.client.saladPrice);
+
+                                    return (
+                                        <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-slate-900 dark:text-white">{order.client.name}</div>
+                                                <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                                                    <Badge variant="outline" className="px-1 py-0 h-4 text-[9px] font-black border-slate-200 text-slate-400">
+                                                        {order.client.paymentType === 'DAILY' ? '일일 결제' : '정기 정산'}
+                                                    </Badge>
+                                                    {order.client.address}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex gap-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] text-slate-400 font-black uppercase">🍱 도시락</span>
+                                                        <span className="font-black text-lg text-blue-600">{order.lunchboxCount}</span>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] text-slate-400 font-black uppercase">🥗 샐러드</span>
+                                                        <span className="font-black text-lg text-emerald-600">{order.saladCount}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={
+                                                    order.status === 'PENDING' ? 'outline' :
+                                                        order.status === 'PREPARING' ? 'secondary' :
+                                                            order.status === 'DELIVERING' ? 'default' :
+                                                                'outline'
+                                                } className={cn(
+                                                    "rounded-lg px-2 py-1 font-black text-[10px]",
+                                                    order.status === 'COMPLETED' && "bg-blue-100 text-blue-700 border-none",
+                                                    order.status === 'PAID' && "bg-emerald-100 text-emerald-700 border-none",
+                                                )}>
+                                                    {order.status === 'PENDING' && '📌 대기 중'}
+                                                    {order.status === 'PREPARING' && '🔥 조리 중'}
+                                                    {order.status === 'DELIVERING' && '🚚 배달 중'}
+                                                    {order.status === 'COMPLETED' && '✅ 배달 완료'}
+                                                    {order.status === 'PAID' && '💰 결제 완료'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                {isDaily ? (
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-sm font-black text-slate-900 dark:text-white">
+                                                            {totalPrice.toLocaleString()}원
+                                                        </span>
+                                                        <span className="text-[9px] text-emerald-600 font-bold">수금 필요</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400 font-bold italic">기간별 정산</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {order.memo ? (
+                                                    <div className="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-md text-slate-700 dark:text-slate-300">
+                                                        <MessageSquare className="h-4 w-4 mt-0.5 flex-shrink-0 text-yellow-600" />
+                                                        <span className="text-sm font-medium leading-tight whitespace-pre-wrap">{order.memo}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-300">-</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex justify-end items-center gap-2">
+                                                    {/* 되돌리기 버튼 (Rollback) */}
+                                                    {order.status !== 'PENDING' && (
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-full"
+                                                            onClick={() => {
+                                                                const prevStatus =
+                                                                    order.status === 'PAID' ? 'COMPLETED' :
+                                                                        order.status === 'COMPLETED' ? 'DELIVERING' :
+                                                                            order.status === 'DELIVERING' ? 'PREPARING' :
+                                                                                'PENDING';
+                                                                handleStatusUpdate(order.id, prevStatus);
+                                                            }}
+                                                            title="이전 단계로 되돌리기"
+                                                        >
+                                                            <Undo2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+
+                                                    {/* 전진 버튼 (Forward) */}
+                                                    {order.status === 'PENDING' && (
+                                                        <Button size="sm" className="rounded-xl px-4 font-bold" onClick={() => handleStatusUpdate(order.id, 'PREPARING')}>작업 개시</Button>
+                                                    )}
+                                                    {order.status === 'PREPARING' && (
+                                                        <Button size="sm" variant="outline" className="text-blue-600 border-blue-200 rounded-xl px-4 font-bold bg-blue-50/50 hover:bg-blue-100" onClick={() => handleStatusUpdate(order.id, 'DELIVERING')}>
+                                                            <Truck className="mr-2 h-4 w-4" /> 배달 출발
+                                                        </Button>
+                                                    )}
+                                                    {order.status === 'DELIVERING' && (
+                                                        <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-200 rounded-xl px-4 font-bold bg-emerald-50/50 hover:bg-emerald-100" onClick={() => handleStatusUpdate(order.id, 'COMPLETED')}>
+                                                            <CheckCircle className="mr-2 h-4 w-4" /> 배달 완료
+                                                        </Button>
+                                                    )}
+                                                    {order.status === 'COMPLETED' && order.client.paymentType === 'DAILY' && (
+                                                        <Button size="sm" variant="ghost" className="text-slate-500 font-bold hover:text-slate-900" onClick={() => handleStatusUpdate(order.id, 'PAID')}>결제 완료 처리</Button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {orders.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                                            오늘 접수된 주문이 없습니다.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
