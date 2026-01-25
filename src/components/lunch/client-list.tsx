@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Edit, Trash2, Clock, DollarSign, User, ExternalLink, Copy, Share2, MessageCircle, Key } from 'lucide-react';
-import { upsertLunchClient } from '@/actions/lunch';
+import { Plus, Edit, Trash2, Clock, DollarSign, User, ExternalLink, Copy, Share2, MessageCircle, Key, Loader2 } from 'lucide-react';
+import { upsertLunchClient, deleteLunchClient } from '@/actions/lunch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,7 @@ export function ClientList({ initialClients }: { initialClients: LunchClient[] }
     const [clients, setClients] = useState(initialClients);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<LunchClient | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [sharingClient, setSharingClient] = useState<LunchClient | null>(null);
 
@@ -68,6 +69,32 @@ export function ClientList({ initialClients }: { initialClients: LunchClient[] }
         setIsModalOpen(true);
     };
 
+    const handleDeleteClient = async (id: string, name: string) => {
+        if (!confirm(`[${name}] 고객사를 정말 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없으며, 기존 주문 내역이 있는 경우 삭제가 실패할 수 있습니다.`)) {
+            return;
+        }
+
+        const result = await deleteLunchClient(id);
+        if (result.success) {
+            window.location.reload();
+        } else {
+            alert(result.error);
+        }
+    };
+
+    const handleDeleteClient = async (id: string, name: string) => {
+        if (!confirm(`[${name}] 고객사를 정말 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없으며, 기존 주문 내역이 있는 경우 삭제가 실패할 수 있습니다.`)) {
+            return;
+        }
+
+        const result = await deleteLunchClient(id);
+        if (result.success) {
+            window.location.reload();
+        } else {
+            alert(result.error);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -84,13 +111,21 @@ export function ClientList({ initialClients }: { initialClients: LunchClient[] }
             paymentType: formData.get('paymentType') as string,
         };
 
-        const result = await upsertLunchClient({
-            ...data,
-            status: formData.get('status') as string,
-        });
-        if (result.success) {
-            setIsModalOpen(false);
-            window.location.reload(); // Simple refresh for now
+        setIsSaving(true);
+        try {
+            const result = await upsertLunchClient({
+                ...data,
+                status: formData.get('status') as string,
+            });
+            if (result.success) {
+                setIsModalOpen(false);
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('저장 중 오류가 발생했습니다.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -108,9 +143,14 @@ export function ClientList({ initialClients }: { initialClients: LunchClient[] }
                         <CardHeader className="bg-slate-50 dark:bg-slate-900 pb-3">
                             <div className="flex items-start justify-between">
                                 <CardTitle className="text-lg">{client.name}</CardTitle>
-                                <Button variant="ghost" size="icon" onClick={() => handleOpenModal(client)}>
-                                    <Edit className="h-4 w-4 text-slate-500" />
-                                </Button>
+                                <div className="flex gap-1">
+                                    <Button variant="ghost" size="icon" onClick={() => handleOpenModal(client)} title="수정">
+                                        <Edit className="h-4 w-4 text-slate-500" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteClient(client.id!, client.name)} title="삭제">
+                                        <Trash2 className="h-4 w-4 text-red-400" />
+                                    </Button>
+                                </div>
                             </div>
                             <div className="flex gap-2 mt-1">
                                 <Badge variant={client.paymentType === 'PERIODIC' ? 'default' : 'secondary'}>
@@ -193,8 +233,8 @@ export function ClientList({ initialClients }: { initialClients: LunchClient[] }
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <Card className="w-full max-w-lg">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <Card className="w-full max-w-lg bg-white dark:bg-slate-900 shadow-2xl border-2 border-slate-200 dark:border-slate-800">
                         <CardHeader>
                             <CardTitle>{editingClient?.id ? '고객사 수정' : '새 고객사 등록'}</CardTitle>
                         </CardHeader>
@@ -256,8 +296,15 @@ export function ClientList({ initialClients }: { initialClients: LunchClient[] }
                                 </div>
                             </CardContent>
                             <div className="flex justify-end gap-2 p-4 pt-0">
-                                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>취소</Button>
-                                <Button type="submit">저장</Button>
+                                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} disabled={isSaving}>취소</Button>
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            저장 중...
+                                        </>
+                                    ) : '저장'}
+                                </Button>
                             </div>
                         </form>
                     </Card>

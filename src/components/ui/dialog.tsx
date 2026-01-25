@@ -40,7 +40,7 @@ export function DialogContent({ children, className }: { children: React.ReactNo
                 onClick={() => onOpenChange(false)}
             />
             <div className={cn(
-                "relative z-[101] w-full max-w-lg rounded-2xl bg-white shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200 overflow-hidden",
+                "relative z-[101] w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in fade-in zoom-in-95 duration-200 overflow-hidden",
                 className
             )}>
                 <div className="p-6">

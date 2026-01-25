@@ -48,6 +48,35 @@ export async function updateLunchClientMemo(clientId: string, memo: string) {
     return { success: true };
 }
 
+export async function deleteLunchClient(id: string) {
+    try {
+        await prisma.lunchClient.delete({
+            where: { id }
+        });
+        revalidatePath('/admin/lunch/clients');
+        return { success: true };
+    } catch (error) {
+        console.error('deleteLunchClient Error:', error);
+        return { success: false, error: '삭제 중 오류가 발생했습니다. 연결된 데이터가 있을 수 있습니다.' };
+    }
+}
+
+export async function deleteLunchClient(id: string) {
+    try {
+        // 관련된 주문이나 사용자가 있을 수 있으므로 주의가 필요함
+        // 여기서는 안전하게 상태를 DELETED로 바꾸거나 실제 삭제를 진행
+        // 사용자의 요구사항은 "삭제가 없어서 제거가 안된다" 이므로 실제 삭제 시도
+        await prisma.lunchClient.delete({
+            where: { id }
+        });
+        revalidatePath('/admin/lunch/clients');
+        return { success: true };
+    } catch (error) {
+        console.error('deleteLunchClient Error:', error);
+        return { success: false, error: '삭제 중 오류가 발생했습니다. 연결된 데이터가 있을 수 있습니다.' };
+    }
+}
+
 // --- 데일리 메뉴 (LunchDailyMenu) 관련 ---
 
 export async function getLunchDailyMenu(date: Date) {
