@@ -27,10 +27,11 @@ interface WorkBoardProps {
     date: Date;
     dailyMenu: any;
     orders: any[];
+    allClients: any[];
     user?: any;
 }
 
-export function WorkBoard({ date, dailyMenu, orders, user }: WorkBoardProps) {
+export function WorkBoard({ date, dailyMenu, orders, allClients, user }: WorkBoardProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -49,6 +50,27 @@ export function WorkBoard({ date, dailyMenu, orders, user }: WorkBoardProps) {
 
     const lunchboxLayout = dailyMenu?.lunchboxLayout ? JSON.parse(dailyMenu.lunchboxLayout) : null;
     const saladLayout = dailyMenu?.saladLayout ? JSON.parse(dailyMenu.saladLayout) : null;
+
+    // 모든 고객사와 주문 데이터 결합
+    const displayOrders = allClients
+        .filter(client => client.status === 'ACTIVE')
+        .map(client => {
+            const order = orders.find(o => o.clientId === client.id);
+            if (order) return order;
+
+            // 주문이 없는 경우 더미 객체 생성
+            return {
+                id: `none-${client.id}`,
+                clientId: client.id,
+                client: client,
+                lunchboxCount: 0,
+                saladCount: 0,
+                status: 'PENDING',
+                memo: '',
+                isPlaceholder: true // 표시용 플래그
+            };
+        })
+        .sort((a, b) => a.client.name.localeCompare(b.client.name));
 
     const handleStatusUpdate = async (orderId: string, newStatus: string) => {
         await updateLunchOrderStatus(orderId, newStatus);
@@ -251,12 +273,15 @@ export function WorkBoard({ date, dailyMenu, orders, user }: WorkBoardProps) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {orders.map((order) => {
+                                {displayOrders.map((order) => {
                                     const isDaily = order.client.paymentType === 'DAILY';
                                     const totalPrice = (order.lunchboxCount * order.client.lunchboxPrice) + (order.saladCount * order.client.saladPrice);
 
                                     return (
-                                        <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                                        <tr key={order.id} className={cn(
+                                            "hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors",
+                                            order.isPlaceholder && "opacity-60 grayscale-[0.5]"
+                                        )}>
                                             <td className="px-6 py-4">
                                                 <div className="font-bold text-slate-900 dark:text-white">{order.client.name}</div>
                                                 <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
@@ -423,10 +448,10 @@ export function WorkBoard({ date, dailyMenu, orders, user }: WorkBoardProps) {
                                         </tr>
                                     );
                                 })}
-                                {orders.length === 0 && (
+                                {displayOrders.length === 0 && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                                            오늘 접수된 주문이 없습니다.
+                                            등록된 고객사가 없습니다.
                                         </td>
                                     </tr>
                                 )}

@@ -1,6 +1,6 @@
 
 
-import { getLunchDailyMenu, getLunchOrdersByDate } from '@/actions/lunch';
+import { getLunchDailyMenu, getLunchOrdersByDate, getLunchClients } from '@/actions/lunch';
 import { getCurrentUser } from '@/actions/auth';
 import { WorkBoard } from '@/components/lunch/work-board';
 import { format } from 'date-fns';
@@ -8,9 +8,10 @@ import { format } from 'date-fns';
 export default async function LunchWorkPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     const { date } = await searchParams;
     const selectedDate = date ? new Date(date) : new Date();
-    const [dailyMenu, orders, user] = await Promise.all([
+    const [dailyMenu, orders, allClients, user] = await Promise.all([
         getLunchDailyMenu(selectedDate),
         getLunchOrdersByDate(selectedDate),
+        getLunchClients(),
         getCurrentUser()
     ]);
 
@@ -29,6 +30,7 @@ export default async function LunchWorkPage({ searchParams }: { searchParams: Pr
                 date={selectedDate}
                 dailyMenu={dailyMenu as any}
                 orders={orders as any}
+                allClients={allClients as any}
                 user={user as any}
             />
         </div>
