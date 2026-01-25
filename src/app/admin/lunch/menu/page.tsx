@@ -1,4 +1,4 @@
-'use server';
+
 
 import { getLunchDailyMenu } from '@/actions/lunch';
 import { MenuBuilder } from '@/components/lunch/menu-builder';

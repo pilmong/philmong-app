@@ -1,4 +1,4 @@
-'use server';
+
 
 import { getLunchDailyMenu, getLunchOrdersByDate } from '@/actions/lunch';
 import { getCurrentUser } from '@/actions/auth';
