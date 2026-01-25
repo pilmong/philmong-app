@@ -9,8 +9,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Truck, CheckCircle, Package, Utensils, MessageSquare, Info, ChevronLeft, ChevronRight, Calendar, XCircle, Undo2 } from 'lucide-react';
+import { Truck, CheckCircle, Package, Utensils, MessageSquare, Info, ChevronLeft, ChevronRight, Calendar, XCircle, Undo2, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { updateLunchOrderCount } from '@/actions/lunch';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 interface WorkBoardProps {
     date: Date;
@@ -42,6 +53,38 @@ export function WorkBoard({ date, dailyMenu, orders, user }: WorkBoardProps) {
     const handleStatusUpdate = async (orderId: string, newStatus: string) => {
         await updateLunchOrderStatus(orderId, newStatus);
         window.location.reload();
+    };
+
+    const [editingOrder, setEditingOrder] = useState<any>(null);
+    const [editData, setEditData] = useState({ lunchboxCount: 0, saladCount: 0, memo: '' });
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const handleEditOpen = (order: any) => {
+        setEditingOrder(order);
+        setEditData({
+            lunchboxCount: order.lunchboxCount,
+            saladCount: order.saladCount,
+            memo: order.memo || ''
+        });
+    };
+
+    const handleUpdateOrder = async () => {
+        if (!editingOrder) return;
+        setIsUpdating(true);
+        try {
+            await updateLunchOrderCount(editingOrder.clientId, date, {
+                ...editData,
+                modifiedBy: user?.name || '관리자'
+            });
+            setEditingOrder(null);
+            router.refresh();
+            // 또는 window.location.reload();
+        } catch (error) {
+            console.error('Update Order Error:', error);
+            alert('수정 중 오류가 발생했습니다.');
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     return (
@@ -277,6 +320,67 @@ export function WorkBoard({ date, dailyMenu, orders, user }: WorkBoardProps) {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end items-center gap-2">
+                                                    {/* 수정 버튼 */}
+                                                    <Dialog open={editingOrder?.id === order.id} onOpenChange={(open) => !open && setEditingOrder(null)}>
+                                                        <DialogTrigger asChild>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                className="h-8 w-8 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full"
+                                                                onClick={() => handleEditOpen(order)}
+                                                                title="수량 수정"
+                                                            >
+                                                                <Edit2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent className="sm:max-w-[425px]">
+                                                            <DialogHeader>
+                                                                <DialogTitle>{order.client.name} 수량 수정</DialogTitle>
+                                                                <DialogDescription>
+                                                                    {format(date, 'MM월 dd일')} 납품 수량을 수정합니다.
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+                                                            <div className="grid gap-4 py-4">
+                                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                                    <Label htmlFor="lunchbox" className="text-right">🍱 도시락</Label>
+                                                                    <Input
+                                                                        id="lunchbox"
+                                                                        type="number"
+                                                                        className="col-span-3"
+                                                                        value={editData.lunchboxCount}
+                                                                        onChange={(e) => setEditData({ ...editData, lunchboxCount: parseInt(e.target.value) || 0 })}
+                                                                    />
+                                                                </div>
+                                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                                    <Label htmlFor="salad" className="text-right">🥗 샐러드</Label>
+                                                                    <Input
+                                                                        id="salad"
+                                                                        type="number"
+                                                                        className="col-span-3"
+                                                                        value={editData.saladCount}
+                                                                        onChange={(e) => setEditData({ ...editData, saladCount: parseInt(e.target.value) || 0 })}
+                                                                    />
+                                                                </div>
+                                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                                    <Label htmlFor="memo" className="text-right">📝 메모</Label>
+                                                                    <Input
+                                                                        id="memo"
+                                                                        className="col-span-3"
+                                                                        value={editData.memo}
+                                                                        onChange={(e) => setEditData({ ...editData, memo: e.target.value })}
+                                                                        placeholder="수정 사유 등"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <DialogFooter>
+                                                                <Button variant="outline" onClick={() => setEditingOrder(null)} disabled={isUpdating}>취소</Button>
+                                                                <Button onClick={handleUpdateOrder} disabled={isUpdating}>
+                                                                    {isUpdating ? '저장 중...' : '변경 내용 저장'}
+                                                                </Button>
+                                                            </DialogFooter>
+                                                        </DialogContent>
+                                                    </Dialog>
+
                                                     {/* 되돌리기 버튼 (Rollback) */}
                                                     {order.status !== 'PENDING' && (
                                                         <Button
