@@ -205,50 +205,40 @@ export function WorkBoard({ date, dailyMenu, orders, allClients, user }: WorkBoa
                     </CardHeader>
                     <CardContent className="pt-4 px-4 pb-4">
                         {lunchboxLayout ? (
-                            <div className="relative w-full aspect-[265/195] max-w-[400px] mx-auto bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shadow-inner border">
-                                {/* 용기 배경 이미지 */}
-                                <img
-                                    src="/assets/lunchbox-tray.jpg"
-                                    alt="Lunchbox Tray"
-                                    className="w-full h-full object-cover opacity-80 mix-blend-multiply dark:mix-blend-overlay"
-                                />
-
-                                {/* 메뉴 오버레이 - 라벨 위치에 맞춰 배치 */}
-                                <div className="absolute inset-0 p-2 pointer-events-none">
-                                    {/* 반찬 1 */}
-                                    <div className="absolute top-[8%] left-[6%] w-[18%] text-center">
-                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">반찬1</div>
-                                        <div className="text-xs font-bold text-slate-900 bg-white/60 p-1 rounded backdrop-blur-sm line-clamp-2">{lunchboxLayout.banchan1 || '-'}</div>
+                            <div className="w-full max-w-2xl aspect-[265/195] bg-[#3d2117] rounded-xl p-4 shadow-2xl relative border-8 border-[#2d1a12] mx-auto scale-90 sm:scale-100 font-sans">
+                                {/* 상단 반찬 칸 */}
+                                <div className="grid grid-cols-4 gap-3 h-[45%] mb-4">
+                                    {[
+                                        { key: 'banchan1', label: '반찬1' },
+                                        { key: 'main', label: '메인', highlight: true },
+                                        { key: 'banchan2', label: '반찬2' },
+                                        { key: 'banchan3', label: '반찬3' }
+                                    ].map((item) => (
+                                        <div key={item.key} className={cn(
+                                            "bg-[#2d1a12] rounded-lg p-2 flex flex-col items-center justify-center border",
+                                            item.highlight ? "border-orange-500/50" : "border-[#4d3228]"
+                                        )}>
+                                            <span className={cn("text-[10px] mb-1 font-bold", item.highlight ? "text-orange-400" : "text-slate-500")}>
+                                                {item.label}
+                                            </span>
+                                            <div className={cn(
+                                                "text-center font-bold break-all line-clamp-2",
+                                                item.highlight ? "text-white text-sm" : "text-white/90 text-xs"
+                                            )}>
+                                                {lunchboxLayout[item.key] || '-'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* 하단 밥/국 칸 */}
+                                <div className="grid grid-cols-2 gap-3 h-[45%]">
+                                    <div className="bg-[#2d1a12] rounded-lg p-4 flex flex-col items-center justify-center border border-[#4d3228]">
+                                        <span className="text-xs text-slate-500 mb-2 font-bold">밥</span>
+                                        <div className="text-white text-center font-bold">{lunchboxLayout.rice || '백미밥'}</div>
                                     </div>
-
-                                    {/* 메인 */}
-                                    <div className="absolute top-[8%] left-[28%] w-[22%] text-center">
-                                        <div className="text-[10px] font-black text-orange-500 leading-none mb-1">메인</div>
-                                        <div className="text-sm font-black text-slate-900 bg-white/80 p-1 rounded backdrop-blur-sm border border-orange-200 line-clamp-2">{lunchboxLayout.main || '-'}</div>
-                                    </div>
-
-                                    {/* 반찬 2 */}
-                                    <div className="absolute top-[8%] left-[53%] w-[18%] text-center">
-                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">반찬2</div>
-                                        <div className="text-xs font-bold text-slate-900 bg-white/60 p-1 rounded backdrop-blur-sm line-clamp-2">{lunchboxLayout.banchan2 || '-'}</div>
-                                    </div>
-
-                                    {/* 반찬 3 */}
-                                    <div className="absolute top-[8%] left-[75%] w-[18%] text-center">
-                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">반찬3</div>
-                                        <div className="text-xs font-bold text-slate-900 bg-white/60 p-1 rounded backdrop-blur-sm line-clamp-2">{lunchboxLayout.banchan3 || '-'}</div>
-                                    </div>
-
-                                    {/* 밥 (왼쪽 아래 큰 칸) */}
-                                    <div className="absolute top-[55%] left-[15%] w-[25%] text-center">
-                                        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">밥</div>
-                                        <div className="text-sm font-bold text-slate-700 bg-white/40 p-1 rounded">흰쌀밥</div>
-                                    </div>
-
-                                    {/* 국 (오른쪽 아래 둥근 칸) */}
-                                    <div className="absolute top-[55%] left-[58%] w-[28%] text-center">
-                                        <div className="text-[10px] font-black text-blue-500 leading-none mb-1">오늘의 국</div>
-                                        <div className="text-sm font-black text-slate-900 bg-blue-50/80 p-2 rounded-full border border-blue-200 backdrop-blur-sm line-clamp-2">{lunchboxLayout.soup || '-'}</div>
+                                    <div className="bg-[#2d1a12] rounded-full aspect-square p-4 flex flex-col items-center justify-center border border-blue-500/30 mx-auto w-[85%]">
+                                        <span className="text-xs text-blue-400 mb-2 font-bold">오늘의 국</span>
+                                        <div className="text-white text-center font-bold text-sm line-clamp-2">{lunchboxLayout.soup || '-'}</div>
                                     </div>
                                 </div>
                             </div>
