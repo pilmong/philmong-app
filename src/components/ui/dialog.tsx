@@ -5,6 +5,12 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 
+interface DialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    children: React.ReactNode;
+}
+
 const DialogContext = React.createContext<{ open: boolean; onOpenChange: (open: boolean) => void }>({
     open: false,
     onOpenChange: () => { },
