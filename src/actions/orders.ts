@@ -25,10 +25,26 @@ export async function getOrders(type?: OrderType) {
 
 export async function createOrder(data: any) {
     try {
+        // Calculate targetDatetime if possible
+        let targetDatetime = data.targetDatetime;
+        if (!targetDatetime && data.pickupDate && data.pickupTime) {
+            try {
+                const [hours, minutes] = data.pickupTime.split(':').map(Number);
+                const baseDate = new Date(data.pickupDate);
+                baseDate.setHours(hours || 12, minutes || 0, 0, 0);
+                targetDatetime = baseDate;
+            } catch (e) {
+                console.error('Failed to parse targetDatetime:', e);
+            }
+        }
+
         const order = await prisma.order.create({
             data: {
                 ...data,
+                type: data.type || 'RESERVATION',
+                channel: data.channel || 'TEXT', // Default to TEXT if from parser
                 salesType: data.salesType || 'RESERVATION',
+                targetDatetime: targetDatetime,
                 items: JSON.stringify(data.items),
             },
         });

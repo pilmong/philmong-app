@@ -52,7 +52,14 @@ export async function parseSmartOrder(text: string) {
         });
     });
 
+    let channel = 'TEXT';
+    if (text.includes('네이버')) channel = 'NAVER';
+    if (text.includes('밴드')) channel = 'BAND';
+
     return {
+        type: 'RESERVATION',
+        salesType: 'RESERVATION',
+        channel,
         customerName,
         customerContact,
         pickupDate,
