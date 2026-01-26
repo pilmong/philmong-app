@@ -88,7 +88,7 @@ export function DashboardView() {
                     subValue={`일반 ₩${data.generalSummary.revenue.toLocaleString()} + 런치 ₩${data.lunchSummary.revenue.toLocaleString()}`}
                     icon={TrendingUp}
                     color="bg-slate-900 text-white"
-                    href="/admin/orders/stats"
+                    href="/admin/stats"
                 />
                 <StatCard
                     title="오늘의 런치 현황"

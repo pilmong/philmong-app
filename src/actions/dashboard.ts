@@ -70,3 +70,53 @@ export async function getCombinedDashboardData() {
         throw error;
     }
 }
+
+export async function getUnifiedBusinessStats() {
+    try {
+        const { getGeneralStats } = await import('./orders');
+        const { getLunchStats } = await import('./lunch');
+
+        const generalStats = await getGeneralStats();
+        const lunchStats = await getLunchStats();
+
+        if (!generalStats || !lunchStats) return null;
+
+        // Merge daily trends
+        const dailyTrendMap = new Map();
+
+        generalStats.daily.forEach((d: any) => {
+            const current = dailyTrendMap.get(d.date) || { date: d.date, general: 0, lunch: 0, total: 0 };
+            dailyTrendMap.set(d.date, { ...current, general: current.general + d.revenue, total: current.total + d.revenue });
+        });
+
+        lunchStats.dailyTrend.forEach((d: any) => {
+            const current = dailyTrendMap.get(d.date) || { date: d.date, general: 0, lunch: 0, total: 0 };
+            dailyTrendMap.set(d.date, { ...current, lunch: current.lunch + d.revenue, total: current.total + d.revenue });
+        });
+
+        const dailyTrend = Array.from(dailyTrendMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+        return {
+            summary: {
+                totalRevenue: generalStats.summary.totalRevenue + lunchStats.total.revenue,
+                generalRevenue: generalStats.summary.totalRevenue,
+                lunchRevenue: lunchStats.total.revenue,
+                totalOrders: generalStats.summary.totalOrders + (lunchStats.total.lunchbox + lunchStats.total.salad),
+                profit: lunchStats.total.profit, // General profit not calculated yet in orders stats, focus on lunch for now or keep zero
+                margin: lunchStats.total.margin
+            },
+            dailyTrend,
+            general: {
+                channels: generalStats.channels,
+                products: generalStats.products
+            },
+            lunch: {
+                ratio: lunchStats.ratio,
+                topClients: lunchStats.topClients
+            }
+        };
+    } catch (error) {
+        console.error('getUnifiedBusinessStats Error:', error);
+        return null;
+    }
+}

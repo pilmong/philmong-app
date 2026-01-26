@@ -42,6 +42,7 @@ export default function AdminLayout({
             group: '메인',
             items: [
                 { name: '통합 대시보드', href: '/admin/dashboard', icon: LayoutDashboard, permission: 'DASHBOARD' },
+                { name: '통합 비즈니스 통계', href: '/admin/stats', icon: TrendingUp, permission: 'STATS' },
             ]
         },
         {
@@ -50,7 +51,6 @@ export default function AdminLayout({
                 { name: '주문 관리', href: '/admin/orders', icon: ShoppingBag, permission: 'ORDERS' },
                 { name: '실시간 조리실', href: '/admin/orders/kitchen', icon: ChefHat, permission: 'KITCHEN' },
                 { name: '소분 및 포장', href: '/admin/orders/subdivision', icon: Package, permission: 'SUBDIVISION' },
-                { name: '매출 통계', href: '/admin/orders/stats', icon: TrendingUp, permission: 'STATS' },
             ]
         },
         {
