@@ -26,19 +26,21 @@ model Product {
 
 model Order {
   id              String    @id @default(uuid())
-  type            String    // RESERVATION, ORDER
-  channel         String    // NAVER, PHONE, TEXT, BAND, INSTA, WALK_IN
+  type            String    // RESERVATION, ORDER (기존 필드 유지하되 점진적 통합)
+  salesType       String    @default("RESERVATION") // IN_STORE, RESERVATION, CONTRACT
+  channel         String    // NAVER, PHONE, TEXT, BAND, INSTA, WALK_IN, STORE
   customerName    String
   customerContact String?
   pickupType      String    // PICKUP, DELIVERY
   address         String?
   deliveryFee     Int?
   pickupDate      DateTime?
-  pickupTime      String?
+  pickupTime      String?   // HH:mm
+  targetDatetime  DateTime? // 정렬 및 알람용 통합 시간
   request         String?
   items           String    // JSON string for order items
   totalPrice      Int       @default(0)
-  status          String    @default("PENDING")
+  status          String    @default("PENDING") // PENDING, CONFIRMED, PREPARING, READY_FOR_PICKUP, READY_FOR_DELIVERY, COMPLETED, CANCELLED
   memo            String?   // Raw text or internal notes
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

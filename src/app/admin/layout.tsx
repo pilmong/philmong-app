@@ -42,6 +42,7 @@ export default function AdminLayout({
             group: '메인',
             items: [
                 { name: '통합 대시보드', href: '/admin/dashboard', icon: LayoutDashboard, permission: 'DASHBOARD' },
+                { name: '조리 준비 (Prep)', href: '/admin/prep', icon: ChefHat, permission: 'KITCHEN' },
                 { name: '통합 비즈니스 통계', href: '/admin/stats', icon: TrendingUp, permission: 'STATS' },
             ]
         },
