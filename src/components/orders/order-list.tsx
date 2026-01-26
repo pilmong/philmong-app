@@ -167,23 +167,13 @@ export function OrderList({ initialOrders, products }: OrderListProps) {
     };
 
     useEffect(() => {
-        const performSync = async () => {
-            try {
-                const res = await syncOrdersFromEmail();
-                if (res.success && res.count !== undefined && res.count > 0) {
-                    console.log(`Auto-synced ${res.count} new orders from email.`);
-                    router.refresh();
-                }
-            } catch (err) {
-                console.error("Auto-sync failed:", err);
-            }
-        };
+        // 자동 동기화는 성능 저하(페이지 로딩 지연)의 주범이므로 제거합니다.
+        // 사용자가 상단의 'Sync Emails' 버튼을 직접 누를 때만 동작하도록 변경되었습니다.
 
-        performSync();
         const interval = setInterval(() => {
-            performSync();
+            // 정기적으로 화면을 새로고침하여 다른 곳에서 업데이트된 데이터를 반영합니다.
             router.refresh();
-        }, 600000);
+        }, 600000); // 10분마다 갱신
 
         return () => clearInterval(interval);
     }, [router]);

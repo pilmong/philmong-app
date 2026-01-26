@@ -8,19 +8,18 @@ import { format } from 'date-fns';
 
 export async function getLunchClients() {
     const clients = await prisma.lunchClient.findMany({
+        include: {
+            users: {
+                select: { id: true, name: true, username: true }
+            }
+        },
         orderBy: { name: 'asc' },
     });
 
-    // 각 고객사에 연결된 사용자(담당자) 정보 가져오기
-    const clientsWithUsers = await Promise.all(clients.map(async (client) => {
-        const users = await (prisma as any).user.findMany({
-            where: { clientId: client.id },
-            select: { id: true, name: true, username: true }
-        });
-        return { ...client, linkedUsers: users };
+    return clients.map(client => ({
+        ...client,
+        linkedUsers: client.users
     }));
-
-    return clientsWithUsers;
 }
 
 export async function upsertLunchClient(data: any) {

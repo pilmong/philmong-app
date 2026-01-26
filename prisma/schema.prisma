@@ -60,6 +60,7 @@ model LunchClient {
   status            String       @default("ACTIVE") // ACTIVE, INACTIVE
   memo              String?      // 지속적인 요청사항 (Default Memo)
   orders            LunchOrder[]
+  users             User[]
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 }
@@ -107,6 +108,7 @@ model User {
   role        String   @default("KITCHEN") // ADMIN, MANAGER, KITCHEN, PACKING, CLIENT
   permissions String   @default("[]")      // JSON string: ["DASHBOARD", "ORDERS", "KITCHEN", "SUBDIVISION", "STATS", "LUNCH", "PRODUCTS", "SETTINGS", "USERS"]
   clientId    String?  // For CLIENT role, linked to LunchClient id
+  client      LunchClient? @relation(fields: [clientId], references: [id])
   status      String   @default("ACTIVE")  // ACTIVE, INACTIVE
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
