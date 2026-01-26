@@ -53,17 +53,13 @@ export function SettlementView() {
         }
     };
 
-    const handlePrevWeek = () => {
-        setDateRange(prev => ({
-            start: subDays(prev.start, 7),
-            end: subDays(prev.end, 7)
-        }));
-    };
+    const handleDateChange = (field: 'start' | 'end', value: string) => {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return;
 
-    const handleNextWeek = () => {
         setDateRange(prev => ({
-            start: addDays(prev.start, 7),
-            end: addDays(prev.end, 7)
+            ...prev,
+            [field]: date
         }));
     };
 
@@ -71,17 +67,31 @@ export function SettlementView() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">정산 및 명세서 관리</h1>
                     <p className="text-muted-foreground mt-1">고객사별 납품 수량을 집계하고 일괄 결제 및 명세서를 발행합니다.</p>
                 </div>
-                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                    <Button variant="ghost" size="icon" onClick={handlePrevWeek} className="rounded-xl"><ChevronLeft className="h-4 w-4" /></Button>
-                    <div className="px-4 font-black text-sm text-slate-700 dark:text-slate-300">
-                        {format(dateRange.start, 'yyyy.MM.dd')} ~ {format(dateRange.end, 'yyyy.MM.dd')}
+                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-black text-slate-400 uppercase ml-1">시작일</span>
+                        <input
+                            type="date"
+                            value={format(dateRange.start, 'yyyy-MM-dd')}
+                            onChange={(e) => handleDateChange('start', e.target.value)}
+                            className="bg-transparent border-none text-sm font-black text-slate-700 dark:text-slate-300 focus:ring-0 cursor-pointer p-0"
+                        />
                     </div>
-                    <Button variant="ghost" size="icon" onClick={handleNextWeek} className="rounded-xl"><ChevronRight className="h-4 w-4" /></Button>
+                    <div className="w-[1px] h-8 bg-slate-100 dark:bg-slate-800 mx-2" />
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-black text-slate-400 uppercase ml-1">종료일</span>
+                        <input
+                            type="date"
+                            value={format(dateRange.end, 'yyyy-MM-dd')}
+                            onChange={(e) => handleDateChange('end', e.target.value)}
+                            className="bg-transparent border-none text-sm font-black text-slate-700 dark:text-slate-300 focus:ring-0 cursor-pointer p-0"
+                        />
+                    </div>
                 </div>
             </div>
 
