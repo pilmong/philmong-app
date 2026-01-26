@@ -63,6 +63,8 @@ export async function createOrder(data: any) {
             }
         }
 
+        const { items, ...orderData } = data;
+
         const order = await prisma.order.create({
             data: {
                 ...orderData,
@@ -70,7 +72,12 @@ export async function createOrder(data: any) {
                 channel: data.channel || 'TEXT',
                 salesType: data.salesType || 'RESERVATION',
                 targetDatetime: targetDatetime,
-                items: JSON.stringify(data.items.map((i: any) => ({ name: i.name, quantity: i.quantity, price: i.price, packed: false }))),
+                items: JSON.stringify((items || []).map((i: any) => ({
+                    name: i.name,
+                    quantity: i.quantity,
+                    price: i.price,
+                    packed: false
+                }))),
             },
         });
         revalidatePath('/admin/orders');

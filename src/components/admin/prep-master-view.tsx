@@ -156,12 +156,35 @@ export function PrepMasterView() {
                                     <div className="space-y-2 pt-2 border-t border-slate-200">
                                         <label className="text-[10px] font-black text-slate-400 uppercase">상품 목록</label>
                                         {previewOrder.items.map((item: any, i: number) => (
-                                            <div key={i} className="flex justify-between items-center text-xs font-bold bg-white p-2 rounded-lg border border-slate-100">
-                                                <span className="text-slate-600">{item.name}</span>
-                                                <div className="flex items-center gap-2">
+                                            <div key={i} className={cn(
+                                                "flex justify-between items-center text-xs font-bold p-2 rounded-lg border transition-all",
+                                                item.isRegistered ? "bg-white border-slate-100" : "bg-orange-50 border-orange-200 shadow-sm"
+                                            )}>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-slate-700 flex items-center gap-1.5 font-black">
+                                                        {item.name}
+                                                        {!item.isRegistered && <span className="text-[10px] bg-orange-600 text-white px-2 py-0.5 rounded-md leading-none font-black italic uppercase">New</span>}
+                                                    </span>
+                                                    {!item.isRegistered && (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-[10px] text-slate-500 font-bold italic">단가:</span>
+                                                            <input
+                                                                type="number"
+                                                                className="w-20 bg-white border border-orange-200 rounded px-1.5 py-0.5 text-orange-700 font-black outline-none focus:border-orange-500 transition-colors"
+                                                                value={item.price}
+                                                                onChange={(e) => {
+                                                                    const newItems = [...previewOrder.items];
+                                                                    newItems[i].price = parseInt(e.target.value) || 0;
+                                                                    setPreviewOrder({ ...previewOrder, items: newItems, totalPrice: newItems.reduce((sum, it) => sum + (it.price * it.quantity), 0) });
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-3">
                                                     <input
                                                         type="number"
-                                                        className="w-10 bg-slate-100 rounded text-center py-0.5"
+                                                        className="w-12 bg-slate-100 rounded text-center py-1 border-none font-black text-slate-800"
                                                         value={item.quantity}
                                                         onChange={(e) => {
                                                             const newItems = [...previewOrder.items];
@@ -169,7 +192,7 @@ export function PrepMasterView() {
                                                             setPreviewOrder({ ...previewOrder, items: newItems, totalPrice: newItems.reduce((sum, it) => sum + (it.price * it.quantity), 0) });
                                                         }}
                                                     />
-                                                    <span className="text-slate-400">₩{(item.price * item.quantity).toLocaleString()}</span>
+                                                    <span className="text-slate-500 min-w-[70px] text-right font-black italic">₩{(item.price * item.quantity).toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         ))}
