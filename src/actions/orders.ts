@@ -38,14 +38,39 @@ export async function createOrder(data: any) {
             }
         }
 
+        // Auto-register new products if they don't exist
+        if (data.items && Array.isArray(data.items)) {
+            for (const item of data.items) {
+                if (item.isRegistered === false) {
+                    try {
+                        const existing = await prisma.product.findFirst({ where: { name: item.name } });
+                        if (!existing) {
+                            await prisma.product.create({
+                                data: {
+                                    name: item.name,
+                                    price: item.price || 0,
+                                    type: 'REGULAR',
+                                    category: 'ETC',
+                                    workType: 'COOKING',
+                                    status: 'ACTIVE'
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Failed to auto-register product:', e);
+                    }
+                }
+            }
+        }
+
         const order = await prisma.order.create({
             data: {
-                ...data,
+                ...orderData,
                 type: data.type || 'RESERVATION',
-                channel: data.channel || 'TEXT', // Default to TEXT if from parser
+                channel: data.channel || 'TEXT',
                 salesType: data.salesType || 'RESERVATION',
                 targetDatetime: targetDatetime,
-                items: JSON.stringify(data.items),
+                items: JSON.stringify(data.items.map((i: any) => ({ name: i.name, quantity: i.quantity, price: i.price, packed: false }))),
             },
         });
         revalidatePath('/admin/orders');

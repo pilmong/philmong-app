@@ -33,23 +33,45 @@ export async function parseSmartOrder(text: string) {
         // 예: "낙지볶음 1개", "시금치 2"
     });
 
-    // 상품 마스터를 가져와서 텍스트와 매칭 시도
+    // 2. 상품 마스터를 가져와서 텍스트와 매칭 시도
     const products = await prisma.product.findMany({ where: { status: 'ACTIVE' } });
+    const recognizedProductNames = new Set();
 
+    // 정규 등록 상품 매칭
     lines.forEach(line => {
         products.forEach(p => {
             if (line.includes(p.name)) {
-                // 수량 파악 (상품명 뒤의 숫자나 '개', '팩' 등)
                 const qtyMatch = line.match(new RegExp(`${p.name}\\s*(\\d+)`)) || line.match(new RegExp(`${p.name}\\s*(\\d+)\\s*[개팩]`));
                 const quantity = qtyMatch ? parseInt(qtyMatch[1]) : 1;
 
                 items.push({
                     name: p.name,
                     quantity,
-                    price: p.price
+                    price: p.price,
+                    isRegistered: true
                 });
+                recognizedProductNames.add(p.name);
             }
         });
+    });
+
+    // 미등록 상품 후보 탐색
+    lines.forEach(line => {
+        // "단어 + 숫자" 패턴 찾기
+        const potentialMatch = line.match(/^([가-힣\w\s]+?)\s*(\d+)\s*[개팩]?$/) || line.match(/([가-힣\w\s]+?)\s*(\d+)\s*[개팩]/);
+        if (potentialMatch) {
+            const name = potentialMatch[1].trim();
+            const quantity = parseInt(potentialMatch[2]);
+
+            if (!recognizedProductNames.has(name) && name.length > 1 && name.length < 20) {
+                items.push({
+                    name,
+                    quantity,
+                    price: 0,
+                    isRegistered: false
+                });
+            }
+        }
     });
 
     let channel = 'TEXT';
