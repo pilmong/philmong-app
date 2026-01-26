@@ -23,7 +23,9 @@ export async function getLunchClients() {
 }
 
 export async function upsertLunchClient(data: any) {
-    const { id, ...rest } = data;
+    const { id, users, linkedUsers, createdAt, updatedAt, ...rest } = data;
+
+    // rest 객체에는 이제 LunchClient 테이블의 실제 컬럼들만 남게 됩니다.
     if (id) {
         await prisma.lunchClient.update({
             where: { id },
