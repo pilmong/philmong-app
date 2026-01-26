@@ -101,7 +101,7 @@ export async function getUnifiedBusinessStats() {
                 totalRevenue: generalStats.summary.totalRevenue + lunchStats.total.revenue,
                 generalRevenue: generalStats.summary.totalRevenue,
                 lunchRevenue: lunchStats.total.revenue,
-                totalOrders: generalStats.summary.totalOrders + (lunchStats.total.lunchbox + lunchStats.total.salad),
+                totalOrders: generalStats.summary.totalOrders + (lunchStats.total.totalLunchbox + lunchStats.total.totalSalad),
                 profit: lunchStats.total.profit, // General profit not calculated yet in orders stats, focus on lunch for now or keep zero
                 margin: lunchStats.total.margin
             },

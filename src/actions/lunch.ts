@@ -418,7 +418,9 @@ export async function getLunchStats() {
                 revenue: totalRevenue,
                 cost: totalCost,
                 profit: totalProfit,
-                margin: totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0
+                margin: totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0,
+                totalLunchbox,
+                totalSalad
             },
             ratio: [
                 { name: '도시락', value: totalLunchbox, color: '#f97316' },
