@@ -301,20 +301,21 @@ export function WorkBoard({ date, dailyMenu, orders, allClients, user }: WorkBoa
 
                                     return (
                                         <tr key={order.id} className={cn(
-                                            "hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors",
-                                            order.isPlaceholder && "opacity-60 grayscale-[0.5]"
+                                            "hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                                         )}>
                                             <td className="px-6 py-4">
-                                                <div className="font-bold text-slate-900 dark:text-white">{order.client.name}</div>
-                                                <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
-                                                    <Badge variant="outline" className="px-1 py-0 h-4 text-[9px] font-black border-slate-200 text-slate-400">
-                                                        {order.client.paymentType === 'DAILY' ? '일일 결제' : '정기 정산'}
-                                                    </Badge>
-                                                    {order.client.address}
+                                                <div className={cn(order.isPlaceholder && "opacity-60 grayscale-[0.5]")}>
+                                                    <div className="font-bold text-slate-900 dark:text-white">{order.client.name}</div>
+                                                    <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                                                        <Badge variant="outline" className="px-1 py-0 h-4 text-[9px] font-black border-slate-200 text-slate-400">
+                                                            {order.client.paymentType === 'DAILY' ? '일일 결제' : '정기 정산'}
+                                                        </Badge>
+                                                        {order.client.address}
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex gap-4">
+                                                <div className={cn("flex gap-4", order.isPlaceholder && "opacity-60 grayscale-[0.5]")}>
                                                     <div className="flex flex-col">
                                                         <span className="text-[9px] text-slate-400 font-black uppercase">🍱 도시락</span>
                                                         <span className="font-black text-lg text-blue-600">{order.lunchboxCount}</span>
@@ -326,22 +327,24 @@ export function WorkBoard({ date, dailyMenu, orders, allClients, user }: WorkBoa
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <Badge variant={
-                                                    order.status === 'PENDING' ? 'outline' :
-                                                        order.status === 'PREPARING' ? 'secondary' :
-                                                            order.status === 'DELIVERING' ? 'default' :
-                                                                'outline'
-                                                } className={cn(
-                                                    "rounded-lg px-2 py-1 font-black text-[10px]",
-                                                    order.status === 'COMPLETED' && "bg-blue-100 text-blue-700 border-none",
-                                                    order.status === 'PAID' && "bg-emerald-100 text-emerald-700 border-none",
-                                                )}>
-                                                    {order.status === 'PENDING' && '📌 대기 중'}
-                                                    {order.status === 'PREPARING' && '🔥 조리 중'}
-                                                    {order.status === 'DELIVERING' && '🚚 배달 중'}
-                                                    {order.status === 'COMPLETED' && '✅ 배달 완료'}
-                                                    {order.status === 'PAID' && '💰 결제 완료'}
-                                                </Badge>
+                                                <div className={cn(order.isPlaceholder && "opacity-60 grayscale-[0.5]")}>
+                                                    <Badge variant={
+                                                        order.status === 'PENDING' ? 'outline' :
+                                                            order.status === 'PREPARING' ? 'secondary' :
+                                                                order.status === 'DELIVERING' ? 'default' :
+                                                                    'outline'
+                                                    } className={cn(
+                                                        "rounded-lg px-2 py-1 font-black text-[10px]",
+                                                        order.status === 'COMPLETED' && "bg-blue-100 text-blue-700 border-none",
+                                                        order.status === 'PAID' && "bg-emerald-100 text-emerald-700 border-none",
+                                                    )}>
+                                                        {order.status === 'PENDING' && '📌 대기 중'}
+                                                        {order.status === 'PREPARING' && '🔥 조리 중'}
+                                                        {order.status === 'DELIVERING' && '🚚 배달 중'}
+                                                        {order.status === 'COMPLETED' && '✅ 배달 완료'}
+                                                        {order.status === 'PAID' && '💰 결제 완료'}
+                                                    </Badge>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 {isDaily ? (
