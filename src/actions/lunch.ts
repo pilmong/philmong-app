@@ -180,7 +180,10 @@ export async function getLunchSettlement(startDate: Date, endDate: Date) {
     end.setHours(23, 59, 59, 999);
 
     const clients = await prisma.lunchClient.findMany({
-        where: { status: 'ACTIVE' },
+        where: {
+            status: 'ACTIVE',
+            paymentType: 'PERIODIC' // 기간별 정산 고객사만 표시
+        },
         include: {
             orders: {
                 where: {
@@ -214,6 +217,47 @@ export async function getLunchSettlement(startDate: Date, endDate: Date) {
             unpaidCount
         };
     });
+}
+
+export async function getClientSettlement(clientId: string, startDate: Date, endDate: Date) {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const client = await prisma.lunchClient.findUnique({
+        where: { id: clientId },
+        include: {
+            orders: {
+                where: {
+                    date: {
+                        gte: start,
+                        lte: end
+                    }
+                }
+            }
+        }
+    });
+
+    if (!client) return null;
+
+    const totalLunchbox = client.orders.reduce((sum, o) => sum + o.lunchboxCount, 0);
+    const totalSalad = client.orders.reduce((sum, o) => sum + o.saladCount, 0);
+    const totalPrice = (totalLunchbox * client.lunchboxPrice) + (totalSalad * client.saladPrice);
+
+    const unpaidCount = client.orders.filter(o => o.status === 'COMPLETED').length;
+
+    return {
+        id: client.id,
+        name: client.name,
+        lunchboxPrice: client.lunchboxPrice,
+        saladPrice: client.saladPrice,
+        totalLunchbox,
+        totalSalad,
+        totalPrice,
+        orderCount: client.orders.length,
+        unpaidCount
+    };
 }
 
 export async function getLunchInvoiceData(clientId: string, startDate: Date, endDate: Date) {
