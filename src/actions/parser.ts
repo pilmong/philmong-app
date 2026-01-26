@@ -39,8 +39,8 @@ export async function parseSmartOrder(text: string) {
     lines.forEach(line => {
         products.forEach(p => {
             if (line.includes(p.name)) {
-                // 수량 파악 (상품명 뒤의 숫자)
-                const qtyMatch = line.match(new RegExp(`${p.name}\\s*(\\d+)`));
+                // 수량 파악 (상품명 뒤의 숫자나 '개', '팩' 등)
+                const qtyMatch = line.match(new RegExp(`${p.name}\\s*(\\d+)`)) || line.match(new RegExp(`${p.name}\\s*(\\d+)\\s*[개팩]`));
                 const quantity = qtyMatch ? parseInt(qtyMatch[1]) : 1;
 
                 items.push({
@@ -59,6 +59,8 @@ export async function parseSmartOrder(text: string) {
     return {
         type: 'RESERVATION',
         salesType: 'RESERVATION',
+        pickupType: 'PICKUP', // Default to PICKUP
+        status: 'PENDING',
         channel,
         customerName,
         customerContact,
@@ -66,6 +68,7 @@ export async function parseSmartOrder(text: string) {
         pickupTime,
         items,
         totalPrice: items.reduce((sum, i) => sum + (i.price * i.quantity), 0),
-        memo: `[Smart Parsed] ${text.slice(0, 50)}...`
+        memo: `[Smart Parsed] ${text.slice(0, 50)}...`,
+        request: text // Keep original text as request for reference
     };
 }

@@ -124,23 +124,60 @@ export function PrepMasterView() {
                                     <span className="text-blue-600">성공</span>
                                 </h4>
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-end">
-                                        <div>
-                                            <div className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">{previewOrder.customerName}</div>
-                                            <div className="text-[10px] text-slate-500 font-bold">{previewOrder.customerContact || '연락처 없음'}</div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase">고객명</label>
+                                                <input
+                                                    className="w-full bg-transparent border-b border-slate-300 focus:border-blue-500 outline-none text-base font-black px-0 py-1"
+                                                    value={previewOrder.customerName}
+                                                    onChange={(e) => setPreviewOrder({ ...previewOrder, customerName: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="w-24">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase">픽업시간</label>
+                                                <input
+                                                    className="w-full bg-transparent border-b border-slate-300 focus:border-blue-500 outline-none text-base font-black px-0 py-1"
+                                                    value={previewOrder.pickupTime}
+                                                    onChange={(e) => setPreviewOrder({ ...previewOrder, pickupTime: e.target.value })}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-xs font-black text-blue-600">{previewOrder.pickupTime} 예정</div>
-                                            <div className="text-[10px] text-slate-400 font-bold italic">RESERVATION</div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase">연락처</label>
+                                            <input
+                                                className="w-full bg-transparent border-b border-slate-300 focus:border-blue-500 outline-none text-sm font-medium px-0 py-1"
+                                                value={previewOrder.customerContact}
+                                                onChange={(e) => setPreviewOrder({ ...previewOrder, customerContact: e.target.value })}
+                                                placeholder="010-0000-0000"
+                                            />
                                         </div>
                                     </div>
-                                    <div className="space-y-1 pt-2 border-t border-slate-200">
+                                    <div className="space-y-2 pt-2 border-t border-slate-200">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase">상품 목록</label>
                                         {previewOrder.items.map((item: any, i: number) => (
-                                            <div key={i} className="flex justify-between text-xs font-bold">
-                                                <span className="text-slate-600">{item.name} x{item.quantity}</span>
-                                                <span className="text-slate-400">₩{(item.price * item.quantity).toLocaleString()}</span>
+                                            <div key={i} className="flex justify-between items-center text-xs font-bold bg-white p-2 rounded-lg border border-slate-100">
+                                                <span className="text-slate-600">{item.name}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="number"
+                                                        className="w-10 bg-slate-100 rounded text-center py-0.5"
+                                                        value={item.quantity}
+                                                        onChange={(e) => {
+                                                            const newItems = [...previewOrder.items];
+                                                            newItems[i].quantity = parseInt(e.target.value) || 0;
+                                                            setPreviewOrder({ ...previewOrder, items: newItems, totalPrice: newItems.reduce((sum, it) => sum + (it.price * it.quantity), 0) });
+                                                        }}
+                                                    />
+                                                    <span className="text-slate-400">₩{(item.price * item.quantity).toLocaleString()}</span>
+                                                </div>
                                             </div>
                                         ))}
+                                        {previewOrder.items.length === 0 && (
+                                            <div className="text-xs text-orange-500 font-bold p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-center gap-2">
+                                                <AlertCircle className="w-4 h-4" /> 인식된 상품이 없습니다. 상품명을 확인해 주세요.
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex justify-between items-center pt-2 border-t border-slate-200">
                                         <span className="text-xs font-black">총액</span>
