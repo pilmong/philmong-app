@@ -53,7 +53,8 @@ export async function getCombinedDashboardData() {
             lunchSummary: {
                 lunchbox: lunchWorkload.total.lunchbox,
                 salad: lunchWorkload.total.salad,
-                clientCount: lunchWorkload.total.clientCount
+                clientCount: lunchWorkload.total.clientCount,
+                revenue: lunchWorkload.total.revenue
             },
             kitchenLoad,
             upcoming: upcomingOrders.map(o => ({

@@ -343,7 +343,8 @@ export async function getKitchenWorkload(date: Date) {
         total: {
             lunchbox: totalLunchbox,
             salad: totalSalad,
-            clientCount: orders.length
+            clientCount: orders.length,
+            revenue: orders.reduce((sum, o) => sum + (o.lunchboxCount * o.client.lunchboxPrice) + (o.saladCount * o.client.saladPrice), 0)
         },
         orders: orders.map(o => ({
             id: o.id,

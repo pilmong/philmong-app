@@ -83,6 +83,22 @@ export function DashboardView() {
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
+                    title="오늘의 통합 확정 매출"
+                    value={`₩${(data.generalSummary.revenue + data.lunchSummary.revenue).toLocaleString()}`}
+                    subValue={`일반 ₩${data.generalSummary.revenue.toLocaleString()} + 런치 ₩${data.lunchSummary.revenue.toLocaleString()}`}
+                    icon={TrendingUp}
+                    color="bg-slate-900 text-white"
+                    href="/admin/orders/stats"
+                />
+                <StatCard
+                    title="오늘의 런치 현황"
+                    value={`${data.lunchSummary.lunchbox + data.lunchSummary.salad}개`}
+                    subValue={`${data.lunchSummary.clientCount}개 고객사 납품 완료`}
+                    icon={Utensils}
+                    color="bg-orange-100 text-orange-600"
+                    href="/admin/lunch/work"
+                />
+                <StatCard
                     title="오늘의 일반 주문"
                     value={`${data.generalSummary.total}건`}
                     subValue={`대기 ${data.generalSummary.pending} / 조리 ${data.generalSummary.preparing}`}
@@ -91,30 +107,43 @@ export function DashboardView() {
                     href="/admin/orders"
                 />
                 <StatCard
-                    title="오늘의 런치 규모"
-                    value={`${data.lunchSummary.lunchbox + data.lunchSummary.salad}개`}
-                    subValue={`${data.lunchSummary.clientCount}개 고객사 납품`}
-                    icon={Utensils}
-                    color="bg-orange-100 text-orange-600"
-                    href="/admin/lunch/work"
-                />
-                <StatCard
-                    title="조리/포장 대기"
+                    title="실시간 주방 부하"
                     value={`${data.kitchenLoad.cooking + data.kitchenLoad.subdivision}건`}
-                    subValue={`조리 ${data.kitchenLoad.cooking} / 소분 ${data.kitchenLoad.subdivision}`}
+                    subValue={`조리 ${data.kitchenLoad.cooking} / 포장 ${data.kitchenLoad.subdivision}`}
                     icon={ChefHat}
                     color="bg-purple-100 text-purple-600"
                     href="/admin/orders/kitchen"
                 />
-                <StatCard
-                    title="확정 매출 요약"
-                    value={`₩${data.generalSummary.revenue.toLocaleString()}`}
-                    subValue="완료된 일반 주문 기준"
-                    icon={TrendingUp}
-                    color="bg-emerald-100 text-emerald-600"
-                    href="/admin/orders/stats"
-                />
             </div>
+
+            {/* Business Mix Visual (New Section) */}
+            <Card className="border-none shadow-sm overflow-hidden bg-white dark:bg-slate-900">
+                <CardContent className="p-0">
+                    <div className="flex h-3 w-full">
+                        <div
+                            className="bg-blue-500 h-full transition-all duration-1000"
+                            style={{ width: `${(data.generalSummary.revenue / (data.generalSummary.revenue + data.lunchSummary.revenue || 1)) * 100}%` }}
+                        />
+                        <div
+                            className="bg-orange-500 h-full transition-all duration-1000"
+                            style={{ width: `${(data.lunchSummary.revenue / (data.generalSummary.revenue + data.lunchSummary.revenue || 1)) * 100}%` }}
+                        />
+                    </div>
+                    <div className="px-6 py-4 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <div className="flex gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                <span className="text-[10px] font-black text-slate-500 uppercase">General Orders ({Math.round((data.generalSummary.revenue / (data.generalSummary.revenue + data.lunchSummary.revenue || 1)) * 100)}%)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                <span className="text-[10px] font-black text-slate-500 uppercase">Lunch Service ({Math.round((data.lunchSummary.revenue / (data.generalSummary.revenue + data.lunchSummary.revenue || 1)) * 100)}%)</span>
+                            </div>
+                        </div>
+                        <div className="text-[10px] font-bold text-slate-400">REVENUE MIX ANALYSIS</div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* 실시간 주방 현황 요약 */}
