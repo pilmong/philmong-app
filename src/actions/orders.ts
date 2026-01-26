@@ -28,6 +28,7 @@ export async function createOrder(data: any) {
         const order = await prisma.order.create({
             data: {
                 ...data,
+                salesType: data.salesType || 'RESERVATION',
                 items: JSON.stringify(data.items),
             },
         });

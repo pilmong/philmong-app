@@ -3,15 +3,25 @@
 import { useState, useEffect } from 'react';
 import { getDailyPrepWorkload } from '@/actions/prep';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChefHat, Package, CheckCircle2, AlertCircle, Calendar, RefreshCcw, ClipboardCheck, ArrowRight } from 'lucide-react';
+import {
+    ChefHat, Package, CheckCircle2, AlertCircle, Calendar,
+    RefreshCcw, ClipboardCheck, ArrowRight, Zap, Loader2
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { parseSmartOrder } from '@/actions/parser';
+import { createOrder } from '@/actions/orders';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 export function PrepMasterView() {
     const [date, setDate] = useState(new Date());
     const [prepItems, setPrepItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [rawText, setRawText] = useState('');
+    const [parsing, setParsing] = useState(false);
+    const [previewOrder, setPreviewOrder] = useState<any>(null);
 
     useEffect(() => {
         loadData();
@@ -24,6 +34,30 @@ export function PrepMasterView() {
             setPrepItems(data);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleParse = async () => {
+        if (!rawText.trim()) return;
+        setParsing(true);
+        try {
+            const result = await parseSmartOrder(rawText);
+            setPreviewOrder(result);
+        } finally {
+            setParsing(false);
+        }
+    };
+
+    const handleSaveOrder = async () => {
+        if (!previewOrder) return;
+        try {
+            await createOrder(previewOrder);
+            setRawText('');
+            setPreviewOrder(null);
+            loadData();
+            alert('주문이 등록되었습니다!');
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -55,6 +89,75 @@ export function PrepMasterView() {
                     >다음</button>
                 </div>
             </div>
+
+            {/* Smart Parser Card (NEW) */}
+            <Card className="border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden border-2 border-slate-100">
+                <CardHeader className="bg-slate-50 dark:bg-slate-800/50">
+                    <CardTitle className="text-sm font-black flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-yellow-500" /> SMART ORDER PARSER
+                    </CardTitle>
+                    <CardDescription className="text-xs">네이버 주문이나 문자 내역을 복사해서 붙여넣으세요.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6 space-y-4">
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex-1 space-y-3">
+                            <Textarea
+                                placeholder="여기에 텍스트를 붙여넣으세요..."
+                                className="h-32 border-slate-200 focus:border-blue-500 rounded-xl font-medium text-sm"
+                                value={rawText}
+                                onChange={(e) => setRawText(e.target.value)}
+                            />
+                            <Button
+                                onClick={handleParse}
+                                disabled={parsing || !rawText}
+                                className="w-full bg-slate-900 text-white hover:bg-slate-800 rounded-xl font-black h-12"
+                            >
+                                {parsing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCcw className="w-4 h-4 mr-2" />}
+                                주문 내역 분석하기
+                            </Button>
+                        </div>
+
+                        {previewOrder && (
+                            <div className="flex-1 bg-slate-50 dark:bg-slate-800 p-6 rounded-2xl border border-slate-200">
+                                <h4 className="text-xs font-black text-slate-400 uppercase mb-4 flex items-center justify-between">
+                                    분석 결과 미리보기
+                                    <span className="text-blue-600">성공</span>
+                                </h4>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-end">
+                                        <div>
+                                            <div className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">{previewOrder.customerName}</div>
+                                            <div className="text-[10px] text-slate-500 font-bold">{previewOrder.customerContact || '연락처 없음'}</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-xs font-black text-blue-600">{previewOrder.pickupTime} 예정</div>
+                                            <div className="text-[10px] text-slate-400 font-bold italic">RESERVATION</div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1 pt-2 border-t border-slate-200">
+                                        {previewOrder.items.map((item: any, i: number) => (
+                                            <div key={i} className="flex justify-between text-xs font-bold">
+                                                <span className="text-slate-600">{item.name} x{item.quantity}</span>
+                                                <span className="text-slate-400">₩{(item.price * item.quantity).toLocaleString()}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                                        <span className="text-xs font-black">총액</span>
+                                        <span className="text-lg font-black text-slate-900">₩{previewOrder.totalPrice.toLocaleString()}</span>
+                                    </div>
+                                    <Button
+                                        onClick={handleSaveOrder}
+                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black mt-2"
+                                    >
+                                        이대로 주문 등록 (Prep List 반영)
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
 
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 text-slate-400">
