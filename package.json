@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
+    "fresh": "npx rimraf .next && npx prisma generate && next dev -p 3001",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint"
@@ -23,10 +24,12 @@
     "lucide-react": "^0.563.0",
     "mailparser": "^3.9.1",
     "next": "16.1.4",
+    "node-imap": "^0.9.6",
     "prisma": "5.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.7.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
   },

@@ -1,0 +1,17 @@
+npm run fresh
+npm run dev
+EMAIL_USER="tsdu.reservation@gmail.com"
+http://localhost:5555/
+http://localhost:3000/admin/coupons
+http://localhost:3000/admin/products
+로그인: http://localhost:3000/admin/login 접속
+ID: 01012345678
+PW: admin1234
+npm run dev -- -p 3001    [구매 관리 앱 업무에 사용하는 개발서버 시작]
+https://aistudio.google.com/app/api-keys 제미나이 api 키 발급
+
+📜 필몽 프로젝트 통합 계보 (업데이트)
+philmong-store (👑 메인 본진): 필몽의 심장이자 최종 목적지.
+프로젝트 필몽 (📜 Port 3000): store의 과거 유산.
+philmong-purchase (🛠️ Port 3001): 현재 안전하게 가동 중인 실무 엔진.
+philmong-purchase-lab (🧪 Port 3002): [정식 계승자] 3001번의 기능을 모두 품고, **'가계부 + 금전출납부 + 판매가 계산기'**를 통합 중인 미래의 주역.

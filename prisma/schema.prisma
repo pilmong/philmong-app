@@ -8,110 +8,328 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Product {
-  id            String    @id @default(uuid())
-  type          String    // REGULAR, DAILY, SPECIAL, LUNCHBOX
-  category      String?   // For Regular: 요리곁들임, 국물곁들임 etc.
-  name          String
-  price         Int
-  status        String    @default("ACTIVE") // ACTIVE, INACTIVE, PENDING
-  workType      String?   // SUBDIVISION (소분), COOKING (조리)
-  description   String?   // For Daily/Special
-  targetDate    DateTime? // For Daily/Special
-  displayQty    Int?      // For Regular
-  productionQty Int?      // For Daily/Special
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+// 상품 카테고리 정의
+enum ProductType {
+  REGULAR       // 상시 판매
+  DAILY         // 매일 변경
+  SPECIAL       // 특별한 날
+  LUNCH_BOX     // 런치 박스
 }
 
-model Order {
-  id              String    @id @default(uuid())
-  type            String    // RESERVATION, ORDER (기존 필드 유지하되 점진적 통합)
-  salesType       String    @default("RESERVATION") // IN_STORE, RESERVATION, CONTRACT
-  channel         String    // NAVER, PHONE, TEXT, BAND, INSTA, WALK_IN, STORE
-  customerName    String
-  customerContact String?
-  pickupType      String    // PICKUP, DELIVERY
-  address         String?
-  deliveryFee     Int?
-  pickupDate      DateTime?
-  pickupTime      String?   // HH:mm
-  targetDatetime  DateTime? // 정렬 및 알람용 통합 시간
-  request         String?
-  items           String    // JSON string for order items
-  totalPrice      Int       @default(0)
-  status          String    @default("PENDING") // PENDING, CONFIRMED, PREPARING, READY_FOR_PICKUP, READY_FOR_DELIVERY, COMPLETED, CANCELLED
-  memo            String?   // Raw text or internal notes
+// 작업 구분 정의
+enum WorkDivision {
+  IMMEDIATE_SUB_PORTIONING // 즉시 소분 (아웃소싱 후 바로 소분)
+  COOKING                 // 조리 상품 (원재료 구매 후 직접 조리)
+  PROCESSING               // 가공 상품 (아웃소싱 후 추가 조리/양념)
+}
+
+// 판매 상태 관리
+enum ProductStatus {
+  SELLING        // 판매 중
+  NOT_SELLING    // 미 판매
+  PENDING        // 보류 중
+}
+
+// 상품 데이터베이스
+model Product {
+  id              String        @id @default(cuid())
+  name            String
+  price           Int           @default(0)
+  type            ProductType
+  workDivision    WorkDivision  @default(IMMEDIATE_SUB_PORTIONING)
+  status          ProductStatus @default(SELLING)
+  
+  // 상시 판매용 필드
+  standardQuantity Int?          // 진열상품 기준 수량 (작업지시서용)
+
+  // 일시적 판매(Daily, Special, Lunch)용 필드
+  sellingDate     DateTime?     // 판매 날짜
+  description     String?       // 상세 설명
+  plannedQuantity Int?          // 생산 수량 (기획/수요관리 기반)
+
+  // 관계 설정
+  prices          ClientProductPrice[]
+  lunchBoxConfig  LunchBoxConfig?
+  orderItems      OrderRequestItem[]
+  saleItems       SaleItem[]
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([type])
+  @@index([sellingDate])
+}
+
+// 고객사 데이터베이스
+model Client {
+  id              String        @id @default(cuid())
+  name            String
+  managerEmail    String?
+  contact         String?
+  category        String?       // 학교, 병원, 일반기업 등
+  isVatInclusive  Boolean       @default(true)
+  note            String?
+  
+  // 관계 설정
+  customPrices    ClientProductPrice[]
+  orders          OrderRequest[]
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+// 고객사별 상품 단가 관리
+model ClientProductPrice {
+  id              String    @id @default(cuid())
+  clientId        String
+  productId       String
+  customPrice     Int       // 고객사 전용 단가
+  
+  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, productId])
+}
+
+// 런치박스 6칸 메뉴 구성
+model LunchBoxConfig {
+  id              String    @id @default(cuid())
+  productId       String    @unique
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // 레이아웃 타입 (LUNCH_BOX, SALAD)
+  layoutType      String    @default("LUNCH_BOX")
+  
+  // 3개 층 x 3x3 그리드 = 총 27칸 대응 슬롯
+  slotA           String?   
+  slotB           String?
+  slotC           String?
+  slotD           String?
+  slotE           String?
+  slotF           String?
+  slotG           String?
+  slotH           String?
+  slotI           String?
+  slotJ           String?
+  slotK           String?
+  slotL           String?
+  slotM           String?
+  slotN           String?
+  slotO           String?
+  slotP           String?
+  slotQ           String?
+  slotR           String?
+  slotS           String?
+  slotT           String?
+  slotU           String?
+  slotV           String?
+  slotW           String?
+  slotX           String?
+  slotY           String?
+  slotZ           String?
+  slotAA          String?
+}
+
+// 발주 요청서
+model OrderRequest {
+  id              String    @id @default(cuid())
+  clientId        String
+  client          Client    @relation(fields: [clientId], references: [id])
+  targetDate      DateTime  // 납품 요청일
+  
+  items           OrderRequestItem[]
+  
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
 
-// --- 런치 납품 관리 시스템 (신규) ---
-
-model LunchClient {
-  id                String       @id @default(uuid())
-  name              String       // 고객사명
-  contactName       String?      // 담당자 성함
-  contactNumber     String?      // 담당자 연락처
-  address           String?      // 배달 주소
-  defaultStaffCount Int          @default(0)
-  deadlineTime      String       @default("10:00") // 입력 마감 시간
-  lunchboxPrice     Int          @default(0)      // 고객사별 도시락 단가
-  saladPrice        Int          @default(0)      // 고객사별 샐러드 단가
-  paymentType       String       @default("DAILY") // DAILY (일일), PERIODIC (기간별)
-  status            String       @default("ACTIVE") // ACTIVE, INACTIVE
-  memo              String?      // 지속적인 요청사항 (Default Memo)
-  orders            LunchOrder[]
-  users             User[]
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+model OrderRequestItem {
+  id              String    @id @default(cuid())
+  orderId         String
+  productId       String?   // 메뉴 확정 시 연결 (선발주 시 null 가능)
+  itemName        String?   // "도시락(6칸)", "샐러드(3x3)" 등 구분용 명칭
+  itemCategory    String?   // "LUNCH_BOX", "SALAD" 등 논리적 그룹
+  quantity        Int
+  
+  order           OrderRequest @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product?     @relation(fields: [productId], references: [id])
 }
 
-model LunchDailyMenu {
-  id             String   @id @default(uuid())
-  date           DateTime @unique // 기획 날짜
-  lunchboxLayout String   // JSON: { banchan1: "", main: "", banchan2: "", banchan3: "", rice: "", soup: "" }
-  saladLayout    String   // JSON: { layers: { base: [], middle: [], top: [] } }
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+// 주문/판매 프로세스 (네이버 예약 등 통합)
+enum OrderStatus {
+  STANDBY        // 접수대기 (이메일 파싱 직후)
+  ACCEPTED       // 접수
+  PACKING        // 포장
+  DELIVERY_READY // 전달대기
+  COMPLETED      // 전달완료
+  CANCELLED      // 취소
 }
 
-model LunchOrder {
-  id            String      @id @default(uuid())
-  date          DateTime    // 주문 날짜
-  clientId      String
-  client        LunchClient @relation(fields: [clientId], references: [id])
-  lunchboxCount Int         @default(0)
-  saladCount    Int         @default(0)
-  memo          String?
-  status        String      @default("PENDING") // PENDING, PREPARING, DELIVERING, COMPLETED, PAID
-  modifiedBy    String?     // 수정자 정보 (매니저/관리자)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+model Sale {
+  id              String      @id @default(cuid())
+  source          String      @default("NAVER") // NAVER, POS, MANUAL
+  customerName    String?
+  customerPhone   String?
+  pickupType      String?     // PICKUP, DELIVERY
+  address         String?
+  deliveryFee     Int         @default(0)
+  discountType    String?     // PERCENT, AMOUNT
+  discountValue   Int         @default(0)
+  totalAmount     Int
+  status          OrderStatus @default(STANDBY)
+  utilizationDate DateTime?   // 이용 일시 (네이버 예약 등)
+  requestNote     String?     // 예약 요청사항
+  deliveryZone    String?     // 배달 구역 (A zone, B zone 등)
+  reservationNumber String?   // 예약 번호 (네이버 예약 번호 등)
+  visitor         String?     // 방문자 정보 (네이버 예약)
+  memo            String?
+  paymentStatus   String?     // 결제 상태 (입금완료, 카드결제 등)
 
-  @@unique([date, clientId]) // 하루에 고객사당 하나의 주문 행만 존재
+  // 관계 설정
+  items           SaleItem[]
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
-model SystemSettings {
-  id                 String   @id @default("default")
-  companyName        String   @default("필몽")
-  companyRegNo       String?  // 사업자번호
-  bankInfo           String?  @default("국민은행 123-456-7890123")
-  defaultLunchboxCost Int     @default(0) // 기본 도시락 원가
-  defaultSaladCost    Int     @default(0) // 기본 샐러드 원가
-  updatedAt          DateTime @updatedAt
+model SaleItem {
+  id              String      @id @default(cuid())
+  saleId          String
+  productId       String?
+  customName      String?
+  quantity        Int
+  price           Int         // 판매 당시 개별 단가
+
+  sale            Sale        @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product         Product?    @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
 }
 
-model User {
-  id          String   @id @default(uuid())
-  username    String   @unique
-  password    String   // Hashed password
-  name        String
-  role        String   @default("KITCHEN") // ADMIN, MANAGER, KITCHEN, PACKING, CLIENT
-  permissions String   @default("[]")      // JSON string: ["DASHBOARD", "ORDERS", "KITCHEN", "SUBDIVISION", "STATS", "LUNCH", "PRODUCTS", "SETTINGS", "USERS"]
-  clientId    String?  // For CLIENT role, linked to LunchClient id
-  client      LunchClient? @relation(fields: [clientId], references: [id])
-  status      String   @default("ACTIVE")  // ACTIVE, INACTIVE
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// 시스템 전역 설정
+model SystemSetting {
+  id              String    @id @default("GLOBAL")
+  deadlineHour    Int       @default(15) // 발주 마감 시간 (기본 15시)
+  updatedAt       DateTime  @updatedAt
+}
+
+// --- Purchase Management (New) ---
+
+enum PaymentMethod {
+  TRANSFER    // 계좌이체
+  CASH        // 현금
+  CREDIT_CARD // 신용카드
+  CHECK_CARD  // 체크카드
+}
+
+enum PaymentStatus {
+  ORDERED   // 발주 완료 (결제 대기)
+  RECEIVED  // 입고/검수 완료
+  COMPLETED // 결제 완료
+  CANCELLED // 취소
+}
+
+enum UsageType {
+  BUSINESS // 업무용
+  PERSONAL // 개인용
+}
+
+model Purchase {
+  id            String        @id @default(uuid())
+  vendorName    String        // 거래처명
+  date          DateTime      // 날짜
+  paymentMethod PaymentMethod @default(CREDIT_CARD) // 결제수단
+  status        PaymentStatus @default(ORDERED) // 결제구분
+  totalAmount   Int           @default(0) // 총액
+  
+  items         PurchaseItem[]
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model PurchaseItem {
+  id            String    @id @default(uuid())
+  purchaseId    String
+  purchase      Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  
+  name          String    // 품목명
+  quantity      Int       // 수량
+  unitPrice     Int       // 단가 (할인 전)
+  amount        Int       // 실구매액 (할인 후 최종)
+  usage         UsageType // 용도구분
+  note          String?   // 비고
+  isChecked     Boolean   @default(false) // 검수 확인 여부
+  discountValue Int       @default(0) // 할인액
+  discountType  String    @default("UNIT") // UNIT or TOTAL
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Vendor {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  contact   String?  // 연락처 (전화번호, 이메일 등)
+  website   String?  // 웹사이트 URL (추가)
+  note      String?  // 메모 (계좌번호, 담당자 등)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+// 판매가 계산기 모델 (Pricing Calculator)
+model PricingRecipe {
+  id           String              @id @default(cuid())
+  name         String
+  servingSize  String              @default("1인분")
+  targetMargin Float               @default(40)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  ingredients  PricingIngredient[]
+  overheads    PricingOverhead[]
+}
+
+model PricingIngredient {
+  id             String        @id @default(cuid())
+  recipeId       String
+  name           String
+  purchasePrice  Float
+  purchaseUnit   String
+  purchaseAmount Float
+  usageAmount    Float
+  usageUnit      String
+  recipe         PricingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model PricingOverhead {
+  id       String        @id @default(cuid())
+  recipeId String
+  category String
+  amount   Float
+  recipe   PricingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model PricingSettings {
+  id           String   @id @default("default")
+  monthlyLabor Float    @default(0)
+  monthlyRent  Float    @default(0)
+  monthlyUtility Float  @default(0)
+  monthlyOther Float    @default(0)
+  dailySales   Float    @default(0)
+  workingDays  Float    @default(25)
+  perUnit      Float    @default(0)
+  defaultTargetMargin Float @default(40)
+  updatedAt    DateTime @updatedAt
 }
