@@ -145,11 +145,11 @@ export default function PurchaseEntry({ editingRecord, onCancelEdit, onToast }: 
 
     const handleCopyToClipboard = () => {
         if (items.length === 0) return
-        const itemList = items.map((item, idx) => `${idx + 1}. ${item.name} (${item.quantity}개)`).join('\n')
-        const fullText = `[필몽 발주 요청]\n거래처: ${vendorName || '미지정'}\n날짜: ${date}\n\n[품목 리스트]\n${itemList}\n\n합계금액: ${totalAmount.toLocaleString()}원\n항상 감사합니다.`
+        const itemList = items.map((item, idx) => `${idx + 1}. ${item.name}`).join('\n')
+        const fullText = `거래처: ${vendorName || '미지정'}\n날짜: ${date}\n\n${itemList}\n\n항상 감사합니다.`
 
         navigator.clipboard.writeText(fullText)
-            .then(() => onToast("클립보드에 발주 목록이 복사되었습니다.", "SUCCESS"))
+            .then(() => onToast("발주 목록이 복사되었습니다.", "SUCCESS"))
             .catch(() => onToast("복사 실패", "ERROR"))
     }
 

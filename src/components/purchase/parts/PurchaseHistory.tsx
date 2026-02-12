@@ -63,11 +63,11 @@ export default function PurchaseHistory({ onEdit, onToast }: Props) {
     }
 
     const handleCopyHistory = (record: PurchaseRecord) => {
-        const itemList = record.items.map((item, idx) => `${idx + 1}. ${item.name} (${item.quantity}개)`).join('\n')
-        const fullText = `[필몽 발주 재요청]\n거래처: ${record.vendorName}\n원문날짜: ${new Date(record.date).toLocaleDateString()}\n\n[품목 리스트]\n${itemList}\n\n합계금액: ${record.totalAmount.toLocaleString()}원\n항상 감사합니다.`
+        const itemList = record.items.map((item, idx) => `${idx + 1}. ${item.name}`).join('\n')
+        const fullText = `거래처: ${record.vendorName}\n날짜: ${new Date(record.date).toLocaleDateString()}\n\n${itemList}\n\n항상 감사합니다.`
 
         navigator.clipboard.writeText(fullText)
-            .then(() => onToast("클립보드에 발주 내역이 복사되었습니다.", "SUCCESS"))
+            .then(() => onToast("발주 내역이 복사되었습니다.", "SUCCESS"))
             .catch(() => onToast("복사 실패", "ERROR"))
     }
 
