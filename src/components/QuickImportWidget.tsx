@@ -1,69 +1,52 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Zap, ArrowRight, Clipboard } from "lucide-react";
+import { Zap, Plus } from "lucide-react";
 
 export default function QuickImportWidget() {
-    const [text, setText] = useState("");
     const router = useRouter();
 
-    const handleQuickStart = () => {
-        if (!text.trim()) return;
-
-        // 입력된 텍스트를 로컬 스토리지에 임시 저장 (페이지 이동 후 꺼내 쓰기 용도)
-        localStorage.setItem("quickImportData", text);
-
-        // 퀵 에드 페이지로 이동
-        router.push("/quick-add");
-    };
-
     return (
-        <div className="relative group overflow-hidden bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 transition-all duration-500 hover:border-indigo-500/30 shadow-2xl">
+        <div
+            onClick={() => router.push("/quick-add")}
+            className="relative group cursor-pointer overflow-hidden bg-gradient-to-br from-indigo-600/20 to-purple-600/20 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 transition-all duration-500 hover:border-indigo-500/50 hover:shadow-[0_0_50px_rgba(99,102,241,0.2)] shadow-2xl"
+        >
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-                <Zap className="w-32 h-32 text-indigo-400" />
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+                <Zap className="w-48 h-48 text-indigo-400 -rotate-12 translate-x-12 -translate-y-12" />
             </div>
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-4 space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="space-y-4 text-center md:text-left">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest">
                         <SparkleIcon />
-                        <span>Smart Order Parser</span>
+                        <span>High Efficiency Workflow</span>
                     </div>
-                    <h2 className="text-3xl font-black text-white tracking-tighter leading-none">
-                        ROCKET <span className="text-indigo-400">FUEL</span>
-                    </h2>
-                    <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                        네이버 예약이나 메세지를 바로 붙여넣으세요.<br />
-                        인공지능 파서가 즉시 주문으로 변환합니다.
-                    </p>
+                    <div>
+                        <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
+                            INTELLIGENT <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">QUICK ADD</span>
+                        </h2>
+                        <p className="text-slate-400 text-base font-medium leading-relaxed max-w-xl">
+                            어떤 형태의 주문서든 척척 알아듣는 인공지능 보조자. <br className="hidden sm:block" />
+                            지금 바로 퀵 에드로 주문을 입력하고 학습시키세요.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="lg:col-span-8 flex flex-col sm:flex-row gap-4 items-stretch">
-                    <div className="flex-1 relative group/input">
-                        <textarea
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            placeholder="이곳에 예약 정보를 붙여넣으세요..."
-                            className="w-full h-32 sm:h-24 bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-mono resize-none leading-relaxed"
-                        />
-                        <div className="absolute top-4 right-4 text-slate-700 pointer-events-none group-focus-within/input:text-indigo-500/50 transition-colors">
-                            <Clipboard className="w-5 h-5" />
-                        </div>
+                <div className="flex items-center gap-6">
+                    <div className="hidden lg:flex flex-col items-end opacity-40">
+                        <span className="text-[10px] font-black uppercase tracking-tighter text-slate-500">Fast Entry System</span>
+                        <span className="text-xs font-mono text-indigo-400">v2.1-READY</span>
                     </div>
 
-                    <button
-                        onClick={handleQuickStart}
-                        disabled={!text.trim()}
-                        className="sm:w-40 flex flex-col items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl font-black transition-all active:scale-[0.98] group/btn overflow-hidden relative"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity" />
-                        <ArrowRight className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform" />
-                        <span className="text-[11px] uppercase tracking-tighter">Analyze</span>
-                    </button>
+                    <div className="h-20 w-20 bg-white text-slate-950 rounded-[1.5rem] flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all duration-500 shadow-xl group-hover:shadow-indigo-500/40 group-hover:rotate-[360deg] group-active:scale-95">
+                        <Plus className="w-10 h-10" />
+                    </div>
                 </div>
             </div>
+
+            {/* Hover Shine Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
         </div>
     );
 }
