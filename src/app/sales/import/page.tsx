@@ -29,6 +29,26 @@ export default function NaverImportPage() {
         const loadProducts = async () => {
             const products = await getAllProducts();
             setExistingProducts(products);
+
+            // 대시보드 퀵인포트 데이터 확인
+            const quickData = localStorage.getItem("quickImportData");
+            if (quickData) {
+                setInputText(quickData);
+                localStorage.removeItem("quickImportData"); // 사용 후 즉시 삭제
+
+                // 주의: existingProducts가 스테이트에 반영된 후에 handleParse를 실행해야 하므로
+                // 여기서는 직접 parseOrderText를 호출하거나 간접 트리거 처리
+                const result = parseOrderText(quickData, products);
+                setParsedData(result);
+
+                // 자동 매칭
+                const newMapping: Record<string, string> = {};
+                result.items.forEach(item => {
+                    const found = products.find(p => p.name === item.name);
+                    if (found) newMapping[item.name] = found.id;
+                });
+                setMapping(newMapping);
+            }
         };
         loadProducts();
     }, []);

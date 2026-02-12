@@ -11,8 +11,11 @@ import {
     Package,
     CalendarCheck,
     TrendingUp,
-    ShieldCheck
+    ShieldCheck,
+    Flashlight,
+    Sparkles
 } from "lucide-react";
+import QuickImportWidget from "@/components/QuickImportWidget";
 
 export default async function HubPage() {
     // DB 실시간 데이터 요약 (Dashboard Metrics)
@@ -123,6 +126,11 @@ export default async function HubPage() {
                     </div>
                 </header>
 
+                {/* Rocket Fuel: Quick Order Import Section */}
+                <section className="mb-12 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
+                    <QuickImportWidget />
+                </section>
+
                 {/* Hub Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                     {mainShortcuts.map((item, idx) => (
@@ -185,6 +193,6 @@ export default async function HubPage() {
                     </div>
                 </footer>
             </main>
-        </div>
+        </div >
     );
 }
