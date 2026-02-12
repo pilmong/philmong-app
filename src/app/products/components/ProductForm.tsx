@@ -170,9 +170,31 @@ export default function ProductForm({ product }: { product?: any }) {
                 {(productType === "DAILY" || productType === "SPECIAL" || productType === "LUNCH_BOX") && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">판매 예정 날짜</label>
-                            <input name="sellingDate" type="date" className="input-field" defaultValue={product?.sellingDate ? new Date(product.sellingDate).toISOString().split('T')[0] : ""} required />
+                            <label className="text-sm font-medium text-slate-700">
+                                {productType === "SPECIAL" ? "판매 시작 날짜" : "판매 예정 날짜"}
+                            </label>
+                            <input
+                                name="sellingDate"
+                                type="date"
+                                className="input-field"
+                                defaultValue={product?.sellingDate ? new Date(product.sellingDate).toISOString().split('T')[0] : ""}
+                                required
+                            />
                         </div>
+
+                        {productType === "SPECIAL" && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">판매 종료 날짜</label>
+                                <input
+                                    name="sellingEndDate"
+                                    type="date"
+                                    className="input-field"
+                                    defaultValue={product?.sellingEndDate ? new Date(product.sellingEndDate).toISOString().split('T')[0] : ""}
+                                    required
+                                />
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700">생산/판매 수량</label>
                             <input

@@ -43,7 +43,8 @@ model Product {
   standardQuantity Int?          // 진열상품 기준 수량 (작업지시서용)
 
   // 일시적 판매(Daily, Special, Lunch)용 필드
-  sellingDate     DateTime?     // 판매 날짜
+  sellingDate     DateTime?     // 판매 날짜 (또는 시작 날짜)
+  sellingEndDate  DateTime?     // 판매 종료 날짜 (특별 운영 기간용)
   description     String?       // 상세 설명
   plannedQuantity Int?          // 생산 수량 (기획/수요관리 기반)
 

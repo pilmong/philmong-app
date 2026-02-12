@@ -20,7 +20,9 @@ export async function createProduct(formData: FormData) {
         ? parseInt(formData.get("standardQuantity") as string)
         : null;
     const sellingDateStr = formData.get("sellingDate") as string;
+    const sellingEndDateStr = formData.get("sellingEndDate") as string;
     const sellingDate = sellingDateStr ? new Date(sellingDateStr) : null;
+    const sellingEndDate = sellingEndDateStr ? new Date(sellingEndDateStr) : null;
     const description = formData.get("description") as string;
     const plannedQuantity = formData.get("plannedQuantity")
         ? parseInt(formData.get("plannedQuantity") as string)
@@ -44,6 +46,7 @@ export async function createProduct(formData: FormData) {
                 status,
                 standardQuantity,
                 sellingDate,
+                sellingEndDate,
                 description,
                 plannedQuantity,
                 ...(type === 'LUNCH_BOX' ? {
@@ -82,7 +85,9 @@ export async function updateProduct(id: string, formData: FormData) {
         ? parseInt(formData.get("standardQuantity") as string)
         : null;
     const sellingDateStr = formData.get("sellingDate") as string;
+    const sellingEndDateStr = formData.get("sellingEndDate") as string;
     const sellingDate = sellingDateStr ? new Date(sellingDateStr) : null;
+    const sellingEndDate = sellingEndDateStr ? new Date(sellingEndDateStr) : null;
     const description = formData.get("description") as string;
     const plannedQuantity = formData.get("plannedQuantity")
         ? parseInt(formData.get("plannedQuantity") as string)
@@ -107,6 +112,7 @@ export async function updateProduct(id: string, formData: FormData) {
                 status,
                 standardQuantity,
                 sellingDate,
+                sellingEndDate,
                 description,
                 plannedQuantity,
                 ...(type === 'LUNCH_BOX' ? {
