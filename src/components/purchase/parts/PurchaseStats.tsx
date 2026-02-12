@@ -21,8 +21,8 @@ export default function PurchaseStats() {
             getPurchaseStatistics(period),
             getMonthlyTrend()
         ])
-        if (statsRes.success) setStats(statsRes.data)
-        if (trendRes.success) setTrend(trendRes.data)
+        if (statsRes.success && statsRes.data) setStats(statsRes.data)
+        if (trendRes.success && trendRes.data) setTrend(trendRes.data)
         setLoading(false)
     }
 

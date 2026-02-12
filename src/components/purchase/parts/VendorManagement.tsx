@@ -28,7 +28,7 @@ export default function VendorManagement({ onToast }: Props) {
     const loadVendors = async () => {
         setLoading(true)
         const res = await getVendors()
-        if (res.success) {
+        if (res.success && res.data) {
             setVendors(res.data)
         }
         setLoading(false)

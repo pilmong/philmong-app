@@ -4,9 +4,10 @@ import { Product } from "@prisma/client";
 export interface ParsedSaleData {
     customerName?: string;
     customerPhone?: string;
-    visitor?: string; // 추가
+    visitor?: string;
     deliveryFee: number;
     discountValue: number;
+    totalAmount: number; // 추가
     memo: string;
     pickupType: string;
     address?: string;
@@ -17,10 +18,11 @@ export interface ParsedSaleData {
     items: {
         productId?: string;
         customName?: string;
+        name: string; // 추가
         quantity: number;
         price: number;
     }[];
-    matchedLines: number[]; // Indices of lines that were matched as items
+    matchedLines: number[];
 }
 
 /**
@@ -39,8 +41,9 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
     const result: ParsedSaleData = {
         deliveryFee: 0,
         discountValue: 0,
-        memo: text, // Default memo is full text
-        pickupType: "PICKUP", // Default
+        totalAmount: 0, // 초기화
+        memo: text,
+        pickupType: "PICKUP",
         items: [],
         matchedLines: [],
         paymentStatus: ""
@@ -225,6 +228,7 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
 
                         result.items.push({
                             productId: product.id,
+                            name: product.name, // 이름 추가
                             quantity: q,
                             price: product.price
                         });
@@ -268,6 +272,7 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
 
                         result.items.push({
                             customName: line.trim(),
+                            name: line.trim(), // 이름 추가
                             quantity: q,
                             price: 0
                         });
@@ -451,6 +456,7 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
 
                 result.items.push({
                     productId: product.id,
+                    name: product.name, // 이름 추가
                     quantity: quantity,
                     price: product.price
                 });
@@ -459,7 +465,11 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
         }
     }
 
-    result.memo = rawLines.join('\n'); // Store full text
+    result.memo = rawLines.join('\n');
+
+    // 최종 금액 계산
+    const itemsTotal = result.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    result.totalAmount = itemsTotal + result.deliveryFee - result.discountValue;
 
     return result;
 }

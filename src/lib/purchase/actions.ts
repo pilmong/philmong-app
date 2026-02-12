@@ -424,7 +424,8 @@ export async function getAccounts() {
                 id: true,
                 username: true,
                 name: true,
-                createdAt: true
+                createdAt: true,
+                updatedAt: true
             }
         })
         return { success: true, data: accounts }

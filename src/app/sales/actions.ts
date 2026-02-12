@@ -13,8 +13,14 @@ export async function createSaleWithItems(data: {
     totalAmount: number;
     source: string;
     memo?: string;
-    utilizationDate?: string; // 추가
-    reservationNumber?: string; // 추가
+    utilizationDate?: string;
+    reservationNumber?: string;
+    address?: string;
+    requestNote?: string;
+    visitor?: string;
+    deliveryZone?: string;
+    paymentStatus?: string;
+    pickupType?: string;
     items: {
         productId?: string;
         customName?: string;
@@ -33,6 +39,12 @@ export async function createSaleWithItems(data: {
                 source: data.source || "NAVER",
                 memo: data.memo,
                 reservationNumber: data.reservationNumber,
+                address: data.address,
+                requestNote: data.requestNote,
+                visitor: data.visitor,
+                deliveryZone: data.deliveryZone,
+                paymentStatus: data.paymentStatus,
+                pickupType: data.pickupType || (data.address ? "DELIVERY" : "PICKUP"),
                 utilizationDate: parseFlexibleDate(data.utilizationDate),
                 items: {
                     create: data.items.map(item => ({

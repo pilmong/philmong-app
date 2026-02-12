@@ -27,7 +27,7 @@ export default function UserManagement({ onToast }: Props) {
     const loadAccounts = async () => {
         setLoading(true)
         const res = await getAccounts()
-        if (res.success) {
+        if (res.success && res.data) {
             setAccounts(res.data)
         }
         setLoading(false)

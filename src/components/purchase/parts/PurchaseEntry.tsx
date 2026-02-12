@@ -73,7 +73,7 @@ export default function PurchaseEntry({ editingRecord, onCancelEdit, onToast }: 
 
     const loadVendors = async () => {
         const res = await getVendors()
-        if (res.success) setVendors(res.data)
+        if (res.success && res.data) setVendors(res.data)
     }
 
     const handleAddItem = (keepOpen: boolean) => {

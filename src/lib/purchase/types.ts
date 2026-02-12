@@ -30,14 +30,17 @@ export interface PurchaseRecord {
 export interface Vendor {
     id: string
     name: string
-    contact?: string
-    website?: string
-    note?: string
+    contact?: string | null
+    website?: string | null
+    note?: string | null
+    createdAt?: Date
+    updatedAt?: Date
 }
 
 export interface Account {
     id: string
     username: string
-    name?: string
-    createdAt: string
+    name?: string | null
+    createdAt: Date
+    updatedAt: Date
 }

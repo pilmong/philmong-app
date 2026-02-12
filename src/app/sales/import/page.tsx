@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { parseNaverReservation, ParsedSale } from "@/lib/naver-parser";
+import { parseOrderText, ParsedSaleData } from "@/lib/order-parser";
 import { createSaleWithItems, getAllProducts } from "../actions";
 import { useRouter } from "next/navigation";
 import {
@@ -19,7 +19,7 @@ import {
 export default function NaverImportPage() {
     const router = useRouter();
     const [inputText, setInputText] = useState("");
-    const [parsedData, setParsedData] = useState<ParsedSale | null>(null);
+    const [parsedData, setParsedData] = useState<ParsedSaleData | null>(null);
     const [isPending, setIsPending] = useState(false);
     const [existingProducts, setExistingProducts] = useState<{ id: string, name: string, price: number }[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({}); // originalName -> productId
@@ -36,7 +36,7 @@ export default function NaverImportPage() {
     const handleParse = () => {
         if (!inputText.trim()) return;
 
-        const result = parseNaverReservation(inputText);
+        const result = parseOrderText(inputText, existingProducts);
         setParsedData(result);
 
         // 자동 매칭 (이름이 정확히 일치하는 경우)

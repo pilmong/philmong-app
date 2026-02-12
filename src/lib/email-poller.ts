@@ -2,8 +2,8 @@ import 'server-only';
 // @ts-ignore
 import Imap from 'node-imap';
 import { simpleParser, ParsedMail } from 'mailparser';
-import { createSaleWithItems, getProductsByNames } from '@/app/sales/actions';
-import { parseNaverReservation } from '@/lib/naver-parser';
+import { parseOrderText } from '@/lib/order-parser';
+import { prisma } from '@/lib/prisma';
 
 export interface EmailPollResult {
     success: boolean;
@@ -14,6 +14,9 @@ export interface EmailPollResult {
 }
 
 export async function checkEmails(): Promise<EmailPollResult> {
+    // 상품 목록 미리 로드 (파싱 시 매칭용)
+    const allProducts = await prisma.product.findMany();
+
     return new Promise((resolve) => {
         const errors: string[] = [];
         const createdSaleIds: string[] = [];
@@ -79,36 +82,42 @@ export async function checkEmails(): Promise<EmailPollResult> {
                                 if (isNaverReservation) {
                                     try {
                                         const content = parsed.text || parsed.html || "";
-                                        const saleData = parseNaverReservation(content as string);
+                                        const saleData = parseOrderText(content as string, allProducts);
 
                                         if (saleData.items.length > 0) {
-                                            const itemNames = saleData.items.map(i => i.name);
-                                            const products = await getProductsByNames(itemNames);
-                                            const productMap = new Map(products.map(p => [p.name, p.id]));
-
                                             const validItems = saleData.items.map(item => {
-                                                const productId = productMap.get(item.name);
-                                                if (!productId) return null;
+                                                if (!item.productId) return null;
                                                 return {
-                                                    productId,
+                                                    productId: item.productId,
                                                     quantity: item.quantity,
                                                     price: item.price
                                                 };
                                             }).filter((item): item is { productId: string; quantity: number; price: number } => item !== null);
 
                                             if (validItems.length > 0) {
+                                                const { createSaleWithItems } = await import('@/app/sales/actions');
                                                 const result = await createSaleWithItems({
-                                                    ...saleData,
+                                                    customerName: saleData.customerName,
+                                                    customerPhone: saleData.customerPhone,
+                                                    deliveryFee: saleData.deliveryFee,
+                                                    discountValue: saleData.discountValue,
+                                                    totalAmount: saleData.totalAmount,
+                                                    memo: saleData.memo,
+                                                    utilizationDate: saleData.utilizationDate,
+                                                    visitor: saleData.visitor,
+                                                    pickupType: saleData.pickupType,
+                                                    address: saleData.address,
+                                                    paymentStatus: saleData.paymentStatus,
                                                     items: validItems,
                                                     source: 'NAVER_EMAIL',
                                                 });
                                                 processedCount++;
-                                                if (result && result.id) {
-                                                    createdSaleIds.push(result.id);
+                                                if (result && (result as any).id) {
+                                                    createdSaleIds.push((result as any).id);
                                                 }
                                                 console.log(`[EmailPoller] Created sale from: ${subject}`);
                                             } else {
-                                                const msg = `Skipped (no matching products): ${subject}. Items: ${itemNames.join(', ')}`;
+                                                const msg = `Skipped (no matching products): ${subject}`;
                                                 console.log(`[EmailPoller] ${msg}`);
                                                 skipped.push(msg);
                                             }
