@@ -14,8 +14,8 @@ export default function QuickImportWidget() {
         // 입력된 텍스트를 로컬 스토리지에 임시 저장 (페이지 이동 후 꺼내 쓰기 용도)
         localStorage.setItem("quickImportData", text);
 
-        // 임포트 페이지로 이동
-        router.push("/sales/import");
+        // 퀵 에드 페이지로 이동
+        router.push("/quick-add");
     };
 
     return (

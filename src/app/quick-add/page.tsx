@@ -48,6 +48,13 @@ export default function QuickAddPage() {
         // 저장된 문맥 패턴 불러오기
         const saved = localStorage.getItem('philmong_context_patterns');
         if (saved) setLearnedPatterns(JSON.parse(saved));
+
+        // 대시보드 퀵 버튼에서 넘어온 데이터 확인
+        const quickData = localStorage.getItem("quickImportData");
+        if (quickData) {
+            setText(quickData);
+            localStorage.removeItem("quickImportData");
+        }
     }, []);
 
     // 지능형 문맥 학습 함수

@@ -22,15 +22,15 @@ export default function SalesListClient({ sales, products }: { sales: any[], pro
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">판매 및 주문 내역</h1>
-                    <p className="text-slate-500 mt-1">네이버 예약 및 일반 판매 내역을 한눈에 관리하세요.</p>
+                    <p className="text-slate-500 mt-1">퀵 에드 학습을 통해 축적된 모든 판매 내역을 관리합니다.</p>
                 </div>
                 <div className="flex items-center space-x-3">
                     <Link
-                        href="/sales/import"
-                        className="bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 flex items-center"
+                        href="/quick-add"
+                        className="bg-indigo-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex items-center"
                     >
                         <Plus className="w-4 h-4 mr-2" />
-                        네이버 예약 가져오기
+                        퀵 스마트 주문 등록
                     </Link>
                     <button className="bg-white text-slate-600 border border-slate-200 px-4 py-2.5 rounded-2xl text-sm font-bold hover:bg-slate-50 transition-all flex items-center">
                         <Download className="w-4 h-4 mr-2" />
@@ -82,8 +82,8 @@ export default function SalesListClient({ sales, products }: { sales: any[], pro
                         <h3 className="text-xl font-bold text-slate-900 mb-2">등록된 판매 내역이 없습니다.</h3>
                         <p className="text-slate-500 mb-8">네이버 예약 정보를 가져오거나 새로운 주문을 등록해 보세요.</p>
                         <Link
-                            href="/sales/import"
-                            className="btn-primary px-8"
+                            href="/quick-add"
+                            className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-indigo-700 transition-all"
                         >
                             첫 번째 주문 등록하기
                         </Link>
