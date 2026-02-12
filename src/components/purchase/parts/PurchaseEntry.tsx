@@ -143,6 +143,16 @@ export default function PurchaseEntry({ editingRecord, onCancelEdit, onToast }: 
         setIsSaving(false)
     }
 
+    const handleCopyToClipboard = () => {
+        if (items.length === 0) return
+        const itemList = items.map((item, idx) => `${idx + 1}. ${item.name} (${item.quantity}개)`).join('\n')
+        const fullText = `[필몽 발주 요청]\n거래처: ${vendorName || '미지정'}\n날짜: ${date}\n\n[품목 리스트]\n${itemList}\n\n합계금액: ${totalAmount.toLocaleString()}원\n항상 감사합니다.`
+
+        navigator.clipboard.writeText(fullText)
+            .then(() => onToast("클립보드에 발주 목록이 복사되었습니다.", "SUCCESS"))
+            .catch(() => onToast("복사 실패", "ERROR"))
+    }
+
     const totalAmount = items.reduce((sum, i) => sum + i.amount, 0)
 
     return (
@@ -244,12 +254,22 @@ export default function PurchaseEntry({ editingRecord, onCancelEdit, onToast }: 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm min-h-[400px]">
                     <div className="p-5 border-b border-slate-50 flex justify-between items-center">
                         <h3 className="font-black text-slate-800">구매 품목 목록 ({items.length})</h3>
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-sm"
-                        >
-                            <Plus className="w-4 h-4" /> 품목 추가
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {items.length > 0 && (
+                                <button
+                                    onClick={handleCopyToClipboard}
+                                    className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-100 transition-all flex items-center gap-2 border border-emerald-100"
+                                >
+                                    <Share2 className="w-4 h-4" /> 발주하기 (복사)
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-sm"
+                            >
+                                <Plus className="w-4 h-4" /> 품목 추가
+                            </button>
+                        </div>
                     </div>
 
                     <div className="divide-y divide-slate-50">

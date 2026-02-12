@@ -62,6 +62,15 @@ export default function PurchaseHistory({ onEdit, onToast }: Props) {
         }
     }
 
+    const handleCopyHistory = (record: PurchaseRecord) => {
+        const itemList = record.items.map((item, idx) => `${idx + 1}. ${item.name} (${item.quantity}개)`).join('\n')
+        const fullText = `[필몽 발주 재요청]\n거래처: ${record.vendorName}\n원문날짜: ${new Date(record.date).toLocaleDateString()}\n\n[품목 리스트]\n${itemList}\n\n합계금액: ${record.totalAmount.toLocaleString()}원\n항상 감사합니다.`
+
+        navigator.clipboard.writeText(fullText)
+            .then(() => onToast("클립보드에 발주 내역이 복사되었습니다.", "SUCCESS"))
+            .catch(() => onToast("복사 실패", "ERROR"))
+    }
+
     const getStatusStyle = (status: PaymentStatus) => {
         switch (status) {
             case "ORDERED": return "bg-amber-100 text-amber-700 border-amber-200"
@@ -137,6 +146,12 @@ export default function PurchaseHistory({ onEdit, onToast }: Props) {
                                             {record.totalAmount.toLocaleString()}원
                                         </div>
                                     </div>
+                                    <button
+                                        onClick={() => handleCopyHistory(record)}
+                                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="발주내역 복사"
+                                    >
+                                        <Share2 className="w-4 h-4" />
+                                    </button>
                                     <button
                                         onClick={() => onEdit(record)}
                                         className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="수정"
