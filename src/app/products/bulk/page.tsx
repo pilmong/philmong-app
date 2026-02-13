@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ProductType, WorkDivision } from "@prisma/client";
 import { createBulkProducts } from "../actions";
 import { useRouter } from "next/navigation";
-import Link from "next/navigation"; // Error here? Let's fix to next/link
+import Link from "next/link";
 import { Plus, Trash2, HelpCircle } from "lucide-react";
 
 interface BulkRow {
@@ -14,6 +14,7 @@ interface BulkRow {
     workDivision: WorkDivision;
     description: string;
     sellingDate: string;
+    sellingEndDate: string;
     plannedQuantity: string;
 }
 
@@ -27,6 +28,7 @@ export default function BulkProductPage() {
             workDivision: "IMMEDIATE_SUB_PORTIONING" as WorkDivision,
             description: "",
             sellingDate: "",
+            sellingEndDate: "",
             plannedQuantity: ""
         }
     ]);
@@ -41,6 +43,7 @@ export default function BulkProductPage() {
             workDivision: lastRow?.workDivision || "IMMEDIATE_SUB_PORTIONING" as WorkDivision,
             description: "",
             sellingDate: lastRow?.sellingDate || "",
+            sellingEndDate: lastRow?.sellingEndDate || "",
             plannedQuantity: ""
         }]);
     };
@@ -77,12 +80,13 @@ export default function BulkProductPage() {
             const dataToSave = rows
                 .filter(row => row.name.trim() !== "")
                 .map(row => {
-                    const { price, plannedQuantity, sellingDate, ...rest } = row;
+                    const { price, plannedQuantity, sellingDate, sellingEndDate, ...rest } = row;
                     return {
                         ...rest,
                         price: parseInt(price) || 0,
                         plannedQuantity: plannedQuantity ? parseInt(plannedQuantity) : null,
                         sellingDate: sellingDate ? new Date(sellingDate) : null,
+                        sellingEndDate: sellingEndDate ? new Date(sellingEndDate) : null,
                         status: "SELLING" as const
                     };
                 });
@@ -137,6 +141,7 @@ export default function BulkProductPage() {
                                 <th className="px-4 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">계획 수량</th>
                                 <th className="px-4 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">카테고리</th>
                                 <th className="px-4 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">예정 일자</th>
+                                <th className="px-4 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">마감 일자</th>
                                 <th className="px-4 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">작업구분</th>
                                 <th className="px-4 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider w-16">기능</th>
                             </tr>
@@ -168,18 +173,18 @@ export default function BulkProductPage() {
                                             className="input-field text-sm bg-slate-50 focus:bg-white transition-all disabled:opacity-30"
                                             value={row.description}
                                             onChange={(e) => updateRow(index, "description", e.target.value)}
-                                            placeholder={row.type === 'REGULAR' ? "상시 상품은 설명 생략 가능" : "데일리 메뉴 설명 입력"}
-                                            disabled={row.type === 'REGULAR'}
+                                            placeholder={(row.type as string) === 'REGULAR' || (row.type as string) === 'ZONE' || (row.type as string) === 'DISCOUNT' ? "입력 생략 가능" : "데일리 메뉴 설명 입력"}
+                                            disabled={(row.type as string) === 'REGULAR' || (row.type as string) === 'ZONE' || (row.type as string) === 'DISCOUNT'}
                                         />
                                     </td>
-                                    <td className="px-3 py-3 w-28">
+                                    <td className="px-4 py-4">
                                         <input
                                             type="text"
-                                            className="input-field text-sm disabled:opacity-30"
                                             value={row.plannedQuantity}
                                             onChange={(e) => updateRow(index, "plannedQuantity", e.target.value)}
+                                            className="w-full px-3 py-1.5 text-sm border-0 bg-slate-50 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
                                             placeholder="0"
-                                            disabled={row.type === 'REGULAR'}
+                                            disabled={(row.type as string) === 'ZONE' || (row.type as string) === 'DISCOUNT'}
                                         />
                                     </td>
                                     <td className="px-3 py-3 w-40">
@@ -192,6 +197,8 @@ export default function BulkProductPage() {
                                             <option value="DAILY">매일 변경</option>
                                             <option value="SPECIAL">특별 운영</option>
                                             <option value="LUNCH_BOX">런치 박스</option>
+                                            <option value="ZONE">배달 구역</option>
+                                            <option value="DISCOUNT">쿠폰/할인</option>
                                         </select>
                                     </td>
                                     <td className="px-3 py-3 w-44">
@@ -200,7 +207,16 @@ export default function BulkProductPage() {
                                             className="input-field text-sm disabled:opacity-30"
                                             value={row.sellingDate}
                                             onChange={(e) => updateRow(index, "sellingDate", e.target.value)}
-                                            disabled={row.type === 'REGULAR'}
+                                            disabled={(row.type as string) === 'REGULAR' || (row.type as string) === 'ZONE' || (row.type as string) === 'DISCOUNT'}
+                                        />
+                                    </td>
+                                    <td className="px-3 py-3 w-44">
+                                        <input
+                                            type="date"
+                                            className="input-field text-sm disabled:opacity-30"
+                                            value={row.sellingEndDate}
+                                            onChange={(e) => updateRow(index, "sellingEndDate", e.target.value)}
+                                            disabled={(row.type as string) === 'REGULAR' || (row.type as string) === 'ZONE' || (row.type as string) === 'DISCOUNT'}
                                         />
                                     </td>
                                     <td className="px-3 py-3 w-40">
@@ -208,7 +224,7 @@ export default function BulkProductPage() {
                                             className="input-field text-sm"
                                             value={row.workDivision}
                                             onChange={(e) => updateRow(index, "workDivision", e.target.value)}
-                                            disabled={row.type !== "REGULAR"}
+                                            disabled={row.type !== "REGULAR" && row.type !== "DAILY" && row.type !== "SPECIAL" && row.type !== "LUNCH_BOX"}
                                         >
                                             <option value="IMMEDIATE_SUB_PORTIONING">즉시 소분</option>
                                             <option value="COOKING">조리 상품</option>

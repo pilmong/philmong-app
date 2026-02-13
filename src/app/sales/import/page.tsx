@@ -21,13 +21,13 @@ export default function NaverImportPage() {
     const [inputText, setInputText] = useState("");
     const [parsedData, setParsedData] = useState<ParsedSaleData | null>(null);
     const [isPending, setIsPending] = useState(false);
-    const [existingProducts, setExistingProducts] = useState<{ id: string, name: string, price: number }[]>([]);
+    const [existingProducts, setExistingProducts] = useState<{ id: string, name: string, basePrice: number }[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({}); // originalName -> productId
 
     // 상품 목록 초기 로드
     useEffect(() => {
         const loadProducts = async () => {
-            const products = await getAllProducts();
+            const products = (await getAllProducts()) as any[];
             setExistingProducts(products);
 
             // 대시보드 퀵인포트 데이터 확인
@@ -98,7 +98,7 @@ export default function NaverImportPage() {
                 items: parsedData.items.map(item => ({
                     productId: mapping[item.name],
                     quantity: item.quantity,
-                    price: item.price || existingProducts.find(p => p.id === mapping[item.name])?.price || 0
+                    price: item.price || existingProducts.find(p => p.id === mapping[item.name])?.basePrice || 0
                     // 파싱된 가격이 있으면 쓰고, 없으면 DB 기본가 사용
                 }))
             });

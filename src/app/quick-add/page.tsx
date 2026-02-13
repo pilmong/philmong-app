@@ -31,6 +31,7 @@ export default function QuickAddPage() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState("");
     const [allProducts, setAllProducts] = useState<any[]>([]);
+    const [deliveryZones, setDeliveryZones] = useState<any[]>([]); // 추가
 
     // 단순 키워드가 아닌 '문맥(Pattern)'을 저장
     const [learnedPatterns, setLearnedPatterns] = useState<any>({});
@@ -45,6 +46,8 @@ export default function QuickAddPage() {
 
     useEffect(() => {
         getAllProducts().then(setAllProducts);
+        import("@/app/sales/actions").then(m => m.getDeliveryZones().then(setDeliveryZones)); // 추가
+
         // 저장된 문맥 패턴 불러오기
         const saved = localStorage.getItem('philmong_context_patterns');
         if (saved) setLearnedPatterns(JSON.parse(saved));
@@ -192,28 +195,42 @@ export default function QuickAddPage() {
                 name: matchedProduct?.name || line,
                 quantity,
                 price: matchedProduct?.price || 0,
-                // 'zone' (대소문자 무관) 또는 '배달비' 키워드 감지
-                isZone: matchedProduct?.category === 'ZONE' ||
+                // 'zone' 또는 '배달비' 감지
+                isZone: matchedProduct?.type === 'ZONE' ||
                     /zone|배달비/i.test(matchedProduct?.name || "") ||
-                    /zone|배달비/i.test(line)
+                    /zone|배달비/i.test(line),
+                // 'discount' 또는 '할인/쿠폰' 감지
+                isDiscount: matchedProduct?.type === 'DISCOUNT' ||
+                    /discount|할인|쿠폰/i.test(matchedProduct?.name || "") ||
+                    /discount|할인|쿠폰/i.test(line)
             };
         });
 
         const deliveryZoneTextInput = getValue(mappings.deliveryZone);
         const zoneProductFromInput = allProducts.find(p => deliveryZoneTextInput.includes(p.name));
 
-        // 2. 실제 품목 목록(items)에서 배달구역 상품은 제외
-        const finalItems = rawMappedItems.filter((it: any) => !it.isZone).map((it: any) => ({
+        // 2. 실제 품목 목록(items)에서 배달구역/할인 상품은 제외
+        const finalItems = rawMappedItems.filter((it: any) => !it.isZone && !it.isDiscount).map((it: any) => ({
             productId: it.id,
             customName: it.id ? undefined : it.name,
             quantity: it.quantity,
             price: it.price
         }));
 
-        // 3. 배달비 정보 추출 (품목 중에 섞여있던 배달비 아이템 우선)
+        // 3. 배달비 정보 추출 (통합 배달 구역 테이블 기반 자동 매칭)
+        const currentAddress = getValue(mappings.address);
+        const matchedZoneByAddress = deliveryZones.find(zone =>
+            zone.areas?.some((area: string) => currentAddress.includes(area))
+        );
+
         const zoneProductInItems = rawMappedItems.find((it: any) => it.isZone);
-        const deliveryFee = zoneProductFromInput?.price || zoneProductInItems?.price || 0;
-        const deliveryZone = deliveryZoneTextInput || zoneProductInItems?.name || "";
+        const deliveryFee = zoneProductFromInput?.price || zoneProductInItems?.price || matchedZoneByAddress?.price || 0;
+        const deliveryZone = deliveryZoneTextInput || zoneProductInItems?.name || matchedZoneByAddress?.name || "";
+
+        // 4. 할인 정보 추출
+        const discountProductInItems = rawMappedItems.find((it: any) => it.isDiscount);
+        const mappedDiscountValue = getNumber(mappings.discountValue);
+        const finalDiscountValue = mappedDiscountValue || (discountProductInItems?.price || 0);
 
         return {
             customerName: getValue(mappings.customerName),
@@ -221,13 +238,13 @@ export default function QuickAddPage() {
             utilizationDate: getValue(mappings.utilizationDate),
             deliveryZone,
             address: getValue(mappings.address),
-            discountValue: getNumber(mappings.discountValue),
+            discountValue: finalDiscountValue,
             requestNote: getValue(mappings.requestNote),
             visitor: getValue(mappings.visitor),
             paymentStatus: getValue(mappings.paymentStatus),
             items: finalItems,
             deliveryFee,
-            totalAmount: finalItems.reduce((sum: number, it: any) => sum + (it.price * it.quantity), 0) + deliveryFee - getNumber(mappings.discountValue)
+            totalAmount: finalItems.reduce((sum: number, it: any) => sum + (it.price * it.quantity), 0) + deliveryFee - finalDiscountValue
         };
     }, [mappings, lines, allProducts]);
 

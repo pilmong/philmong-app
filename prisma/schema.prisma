@@ -14,6 +14,9 @@ enum ProductType {
   DAILY         // 매일 변경
   SPECIAL       // 특별한 날
   LUNCH_BOX     // 런치 박스
+  SALAD         // 샐러드
+  ZONE          // 배달 구역/배달비
+  DISCOUNT      // 쿠폰/할인
 }
 
 // 작업 구분 정의
@@ -34,8 +37,9 @@ enum ProductStatus {
 model Product {
   id              String        @id @default(cuid())
   name            String
-  price           Int           @default(0)
+  basePrice       Int           @default(0)
   type            ProductType
+  category        ProductCategory?
   workDivision    WorkDivision  @default(IMMEDIATE_SUB_PORTIONING)
   status          ProductStatus @default(SELLING)
   
@@ -59,6 +63,33 @@ model Product {
 
   @@index([type])
   @@index([sellingDate])
+}
+
+// 상품 상세 카테고리 정의 (스토어 공유)
+enum ProductCategory {
+  TODAY_MENU
+  MAIN_DISH
+  SOUP
+  SIDE_DISH
+  KIMCHI
+  PICKLE
+  SAUCE
+  LUNCH_RICE
+  LUNCH_SOUP
+  LUNCH_MAIN
+  LUNCH_SIDE
+  SALAD_MAIN
+}
+
+// 배달 구역 설정 (필몽 스토어와 공유)
+model DeliveryZone {
+  id          String   @id @default(uuid())
+  name        String   // ex: "A zone", "B zone"
+  price       Int      // ex: 4400, 5200
+  areas       String[] 
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // 고객사 데이터베이스
@@ -333,4 +364,22 @@ model PricingSettings {
   perUnit      Float    @default(0)
   defaultTargetMargin Float @default(40)
   updatedAt    DateTime @updatedAt
+}
+// 스토어 운영 정책 설정
+model SystemPolicy {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// 휴무일 관리
+model Holiday {
+  id            String   @id @default(uuid())
+  date          DateTime @unique
+  reason        String?
+  category      String   @default("HOLIDAY")
+  type          String   @default("TEMPORARY")
+  isStoreClosed Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

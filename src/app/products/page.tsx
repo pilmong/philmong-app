@@ -39,29 +39,28 @@ export default async function ProductsPage({ searchParams }: PageProps) {
     }
 
     // Prisma OrderBy 조건 구성
-    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+    let orderBy: any = { createdAt: 'desc' };
 
     if (sort === 'price_asc') {
-        orderBy = { price: 'asc' };
+        orderBy = { basePrice: 'asc' };
     } else if (sort === 'price_desc') {
-        orderBy = { price: 'desc' };
+        orderBy = { basePrice: 'desc' };
     } else if (sort === 'name_asc') {
         orderBy = { name: 'asc' };
     }
 
-    const products = await prisma.product.findMany({
+    const products = await (prisma as any).product.findMany({
         where,
         orderBy
     });
 
     // 시스템 전역 설정 (마감 시간) 가져오기
-    let settings = await prisma.systemSetting.findUnique({
-        where: { id: "GLOBAL" }
+    let deadlineHour = 15;
+    const policy = await (prisma as any).systemPolicy.findUnique({
+        where: { key: "DEADLINE_HOUR" }
     });
-    if (!settings) {
-        settings = await prisma.systemSetting.create({
-            data: { id: "GLOBAL", deadlineHour: 15 }
-        });
+    if (policy) {
+        deadlineHour = parseInt(policy.value, 10);
     }
 
     return (
@@ -82,7 +81,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             </div>
 
             {/* 발주 마감 설정 섹션 */}
-            <DeadlineSetting initialHour={settings.deadlineHour} />
+            <DeadlineSetting initialHour={deadlineHour} />
 
             {/* 필터 섹션 */}
             <ProductFilter />
@@ -107,13 +106,15 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                                 </td>
                             </tr>
                         ) : (
-                            products.map((product) => (
+                            products.map((product: any) => (
                                 <tr key={product.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${product.type === 'REGULAR' ? 'bg-blue-100 text-blue-800' :
                                             product.type === 'DAILY' ? 'bg-green-100 text-green-800' :
                                                 product.type === 'SPECIAL' ? 'bg-purple-100 text-purple-800' :
-                                                    'bg-orange-100 text-orange-800'
+                                                    product.type === 'LUNCH_BOX' ? 'bg-orange-100 text-orange-800' :
+                                                        product.type === 'ZONE' ? 'bg-rose-100 text-rose-800' :
+                                                            'bg-slate-100 text-slate-800'
                                             }`}>
                                             {product.type}
                                         </span>
@@ -122,7 +123,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                                         {product.name}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
-                                        {product.price.toLocaleString()}원
+                                        {(product.basePrice || product.price || 0).toLocaleString()}원
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                         {{

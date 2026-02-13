@@ -8,7 +8,7 @@ import { ShoppingBag, Star, Package, Utensils, Search, Check, RotateCcw, Save } 
 interface Product {
     id: string;
     name: string;
-    price: number;
+    basePrice: number;
     type: ProductType;
 }
 
@@ -131,7 +131,7 @@ export default function CustomPriceSection({
                                                 <span className="text-[10px] font-black bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-tighter">비공개</span>
                                             )}
                                         </div>
-                                        <span className="text-xs font-bold text-slate-400 italic">기본 단가: {product.price.toLocaleString()}원</span>
+                                        <span className="text-xs font-bold text-slate-400 italic">기본 단가: {product.basePrice.toLocaleString()}원</span>
                                     </div>
                                 </div>
 
@@ -152,7 +152,7 @@ export default function CustomPriceSection({
                                         <input
                                             name="customPrice"
                                             type="number"
-                                            defaultValue={customPrice?.customPrice || product.price}
+                                            defaultValue={customPrice?.customPrice || product.basePrice}
                                             className="w-28 h-12 rounded-xl border-2 border-slate-100 px-4 text-sm font-black text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none bg-slate-50/50"
                                         />
                                         <button

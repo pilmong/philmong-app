@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { PollingProvider } from "@/context/PollingContext";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
     children,
@@ -34,6 +35,7 @@ export default function RootLayout({
                         </main>
                     </div>
                 </PollingProvider>
+                <Toaster position="top-right" richColors />
             </body>
         </html>
     );

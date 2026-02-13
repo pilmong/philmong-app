@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { parseOrderText } from "@/lib/order-parser";
 import { parseFlexibleDate } from "@/lib/date-utils";
+import { OrderStatus } from "@prisma/client";
+
 
 export async function createSaleWithItems(data: {
     customerName?: string;
@@ -82,8 +84,24 @@ export async function getProductsByNames(names: string[]) {
 export async function getAllProducts() {
     return await prisma.product.findMany({
         where: { status: "SELLING" },
-        select: { id: true, name: true, price: true }
+        select: { id: true, name: true, basePrice: true, type: true }
     });
+}
+
+/**
+ * 배달 구역 목록을 가져옵니다. (필몽 스토어 공유)
+ */
+export async function getDeliveryZones() {
+    try {
+        const zones = await prisma.deliveryZone.findMany({
+            where: { isActive: true },
+            orderBy: { price: 'asc' }
+        });
+        return zones;
+    } catch (error) {
+        console.error("배달 구역 조회 실패:", error);
+        return [];
+    }
 }
 
 /**
@@ -284,5 +302,21 @@ export async function resetSalesData(target: 'ALL' | 'AUTO_PARSE' = 'ALL') {
     } catch (error) {
         console.error("판매 데이터 초기화 실패:", error);
         return { success: false, error: "초기화 실패" };
+    }
+}
+/**
+ * 주문 상태를 업데이트합니다.
+ */
+export async function updateSaleStatus(saleId: string, status: OrderStatus) {
+    try {
+        await prisma.sale.update({
+            where: { id: saleId },
+            data: { status }
+        });
+        revalidatePath("/sales");
+        return { success: true };
+    } catch (error) {
+        console.error("상태 업데이트 실패:", error);
+        return { success: false, error: "상태 업데이트 실패" };
     }
 }

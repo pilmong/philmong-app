@@ -230,14 +230,14 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
                             productId: product.id,
                             name: product.name, // 이름 추가
                             quantity: q,
-                            price: product.price
+                            price: product.basePrice
                         });
                         matched = true;
 
                         // Check if this is the "D zone" product
                         if (pName.includes("zone") || pName.includes("구역")) {
                             result.deliveryZone = product.name;
-                            result.deliveryFee = product.price;
+                            result.deliveryFee = product.basePrice;
                         }
 
                         linesToRemove.add(i);
@@ -414,7 +414,7 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
                 });
                 if (matchedProduct && matchedProduct.name.toLowerCase().includes("zone")) {
                     result.deliveryZone = matchedProduct.name;
-                    result.deliveryFee = matchedProduct.price;
+                    result.deliveryFee = matchedProduct.basePrice;
                     linesToRemove.add(i);
                 }
             }
@@ -458,7 +458,7 @@ export function parseOrderText(text: string, allProducts: any[]): ParsedSaleData
                     productId: product.id,
                     name: product.name, // 이름 추가
                     quantity: quantity,
-                    price: product.price
+                    price: product.basePrice
                 });
                 break; // One product per line
             }

@@ -40,7 +40,7 @@ export async function createProduct(formData: FormData) {
         const product = await prisma.product.create({
             data: {
                 name,
-                price,
+                basePrice: price,
                 type,
                 workDivision,
                 status,
@@ -106,7 +106,7 @@ export async function updateProduct(id: string, formData: FormData) {
             where: { id },
             data: {
                 name,
-                price,
+                basePrice: price,
                 type,
                 workDivision,
                 status,

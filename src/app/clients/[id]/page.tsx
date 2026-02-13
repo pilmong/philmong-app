@@ -110,7 +110,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 <div className="xl:col-span-2">
                     <CustomPriceSection
                         clientId={id}
-                        allProducts={allProducts.map(p => ({ id: p.id, name: p.name, price: p.price, type: p.type }))}
+                        allProducts={allProducts.map(p => ({ id: p.id, name: p.name, basePrice: p.basePrice, type: p.type }))}
                         initialCustomPrices={client.customPrices.map(cp => ({ productId: cp.productId, customPrice: cp.customPrice }))}
                     />
                 </div>

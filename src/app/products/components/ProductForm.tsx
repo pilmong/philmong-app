@@ -100,6 +100,8 @@ export default function ProductForm({ product }: { product?: any }) {
                             <option value="DAILY">매일 변경 (Daily)</option>
                             <option value="SPECIAL">특별 운영 (Special)</option>
                             <option value="LUNCH_BOX">런치 박스 (Lunch Box)</option>
+                            <option value="ZONE">배달 구역 (Delivery Zone)</option>
+                            <option value="DISCOUNT">쿠폰/할인 (Coupon/Discount)</option>
                         </select>
                     </div>
 
@@ -147,133 +149,135 @@ export default function ProductForm({ product }: { product?: any }) {
             </div>
 
             {/* 카테고리별 상세 정보 */}
-            <div className="card">
-                <h3 className="text-lg font-bold mb-4 border-b pb-2">카테고리 상세 설정</h3>
+            {(productType as string) !== "ZONE" && (productType as string) !== "DISCOUNT" && (
+                <div className="card">
+                    <h3 className="text-lg font-bold mb-4 border-b pb-2">카테고리 상세 설정</h3>
 
-                {productType === "REGULAR" && (
-                    <div className="space-y-4">
-                        <div className="space-y-2 w-full md:w-1/2">
-                            <label className="text-sm font-medium text-slate-700">진열상품 기준 수량</label>
-                            <input
-                                name="standardQuantity"
-                                type="text"
-                                className="input-field"
-                                defaultValue={product?.standardQuantity || ""}
-                                onChange={handleNumberInput}
-                                placeholder="0"
-                            />
-                            <p className="text-xs text-slate-400">* 작업지시서 생성 시 활용됩니다.</p>
-                        </div>
-                    </div>
-                )}
-
-                {(productType === "DAILY" || productType === "SPECIAL" || productType === "LUNCH_BOX") && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">
-                                {productType === "SPECIAL" ? "판매 시작 날짜" : "판매 예정 날짜"}
-                            </label>
-                            <input
-                                name="sellingDate"
-                                type="date"
-                                className="input-field"
-                                defaultValue={product?.sellingDate ? new Date(product.sellingDate).toISOString().split('T')[0] : ""}
-                                required
-                            />
-                        </div>
-
-                        {productType === "SPECIAL" && (
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">판매 종료 날짜</label>
+                    {productType === "REGULAR" && (
+                        <div className="space-y-4">
+                            <div className="space-y-2 w-full md:w-1/2">
+                                <label className="text-sm font-medium text-slate-700">진열상품 기준 수량</label>
                                 <input
-                                    name="sellingEndDate"
+                                    name="standardQuantity"
+                                    type="text"
+                                    className="input-field"
+                                    defaultValue={product?.standardQuantity || ""}
+                                    onChange={handleNumberInput}
+                                    placeholder="0"
+                                />
+                                <p className="text-xs text-slate-400">* 작업지시서 생성 시 활용됩니다.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {(productType === "DAILY" || productType === "SPECIAL" || productType === "LUNCH_BOX") && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">
+                                    {productType === "SPECIAL" ? "판매 시작 날짜" : "판매 예정 날짜"}
+                                </label>
+                                <input
+                                    name="sellingDate"
                                     type="date"
                                     className="input-field"
-                                    defaultValue={product?.sellingEndDate ? new Date(product.sellingEndDate).toISOString().split('T')[0] : ""}
+                                    defaultValue={product?.sellingDate ? new Date(product.sellingDate).toISOString().split('T')[0] : ""}
                                     required
                                 />
                             </div>
-                        )}
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">생산/판매 수량</label>
-                            <input
-                                name="plannedQuantity"
-                                type="text"
-                                className="input-field"
-                                defaultValue={product?.plannedQuantity || ""}
-                                onChange={handleNumberInput}
-                                placeholder="0"
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="text-sm font-medium text-slate-700">메뉴 상세 설명</label>
-                            <textarea name="description" className="input-field h-24" defaultValue={product?.description || ""} placeholder="메뉴에 대한 상세 설명을 입력하세요"></textarea>
-                        </div>
-                    </div>
-                )}
+                            {(productType === "DAILY" || productType === "SPECIAL" || productType === "LUNCH_BOX") && (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">판매 종료 날짜</label>
+                                    <input
+                                        name="sellingEndDate"
+                                        type="date"
+                                        className="input-field"
+                                        defaultValue={product?.sellingEndDate ? new Date(product.sellingEndDate).toISOString().split('T')[0] : ""}
+                                    />
+                                    <p className="text-xs text-slate-400">* 상시/필수 아님 (기간 한정 판매 시 입력)</p>
+                                </div>
+                            )}
 
-                {productType === "LUNCH_BOX" && (
-                    <div className="mt-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <label className="text-sm font-bold text-slate-800 underline decoration-slate-300">내부 구성 실물 모형 선택</label>
-                            <div className="flex p-1 bg-slate-100 rounded-2xl">
-                                <button
-                                    type="button"
-                                    onClick={() => setLayoutType("LUNCH_BOX")}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${layoutType === 'LUNCH_BOX' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    정기 도시락 (6칸)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setLayoutType("SALAD")}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${layoutType === 'SALAD' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    샐러드 (탭 UI)
-                                </button>
-                                <input type="hidden" name="layoutType" value={layoutType} />
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">생산/판매 수량</label>
+                                <input
+                                    name="plannedQuantity"
+                                    type="text"
+                                    className="input-field"
+                                    defaultValue={product?.plannedQuantity || ""}
+                                    onChange={handleNumberInput}
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-sm font-medium text-slate-700">메뉴 상세 설명</label>
+                                <textarea name="description" className="input-field h-24" defaultValue={product?.description || ""} placeholder="메뉴에 대한 상세 설명을 입력하세요"></textarea>
                             </div>
                         </div>
+                    )}
 
-                        {layoutType === "LUNCH_BOX" ? (
-                            <div className="max-w-xl mx-auto bg-slate-200 p-4 rounded-[2.5rem] shadow-inner border-8 border-slate-300/50">
-                                <div className="grid grid-cols-4 gap-3 mb-3">
-                                    <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm">
-                                        <label className="text-[10px] font-black text-rose-500 uppercase">반찬 1</label>
-                                        <input name="slotC" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotC || ""} placeholder="입력..." />
-                                    </div>
-                                    <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm border-2 border-amber-200">
-                                        <label className="text-[10px] font-black text-rose-500 uppercase">메인</label>
-                                        <input name="slotD" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotD || ""} placeholder="주요리" />
-                                    </div>
-                                    <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm">
-                                        <label className="text-[10px] font-black text-rose-500 uppercase">반찬 2</label>
-                                        <input name="slotE" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotE || ""} placeholder="입력..." />
-                                    </div>
-                                    <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm">
-                                        <label className="text-[10px] font-black text-rose-500 uppercase">반찬 3</label>
-                                        <input name="slotF" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotF || ""} placeholder="입력..." />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 h-40">
-                                    <div className="bg-white p-6 rounded-[2rem] shadow-sm flex flex-col justify-center border-l-8 border-slate-100">
-                                        <label className="text-sm font-black text-rose-500 uppercase mb-2">밥</label>
-                                        <input name="slotA" type="text" className="w-full border-none p-0 text-xl font-black text-slate-800 outline-none focus:ring-0 bg-transparent text-center" defaultValue={product?.lunchBoxConfig?.[`slotA`] || ""} placeholder="종류 입력" />
-                                    </div>
-                                    <div className="bg-white p-6 rounded-full shadow-sm flex flex-col justify-center border-4 border-slate-50 items-center overflow-hidden aspect-square mx-auto">
-                                        <label className="text-sm font-black text-rose-500 uppercase mb-2">국</label>
-                                        <input name="slotB" type="text" className="w-full border-none p-0 text-lg font-black text-slate-800 outline-none focus:ring-0 bg-transparent text-center" defaultValue={product?.lunchBoxConfig?.[`slotB`] || ""} placeholder="종류 입력" />
-                                    </div>
+                    {productType === "LUNCH_BOX" && (
+                        <div className="mt-8">
+                            <div className="flex justify-between items-center mb-6">
+                                <label className="text-sm font-bold text-slate-800 underline decoration-slate-300">내부 구성 실물 모형 선택</label>
+                                <div className="flex p-1 bg-slate-100 rounded-2xl">
+                                    <button
+                                        type="button"
+                                        onClick={() => setLayoutType("LUNCH_BOX")}
+                                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${layoutType === 'LUNCH_BOX' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        정기 도시락 (6칸)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLayoutType("SALAD")}
+                                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${layoutType === 'SALAD' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        샐러드 (탭 UI)
+                                    </button>
+                                    <input type="hidden" name="layoutType" value={layoutType} />
                                 </div>
                             </div>
-                        ) : (
-                            <TabbedSaladGrid product={product} />
-                        )}
-                        <p className="text-center text-xs text-slate-400 mt-4 italic font-medium">※ 선택하신 용기 모양에 실시간으로 구성 정보가 매핑됩니다.</p>
-                    </div>
-                )}
-            </div>
+
+                            {layoutType === "LUNCH_BOX" ? (
+                                <div className="max-w-xl mx-auto bg-slate-200 p-4 rounded-[2.5rem] shadow-inner border-8 border-slate-300/50">
+                                    <div className="grid grid-cols-4 gap-3 mb-3">
+                                        <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm">
+                                            <label className="text-[10px] font-black text-rose-500 uppercase">반찬 1</label>
+                                            <input name="slotC" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotC || ""} placeholder="입력..." />
+                                        </div>
+                                        <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm border-2 border-amber-200">
+                                            <label className="text-[10px] font-black text-rose-500 uppercase">메인</label>
+                                            <input name="slotD" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotD || ""} placeholder="주요리" />
+                                        </div>
+                                        <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm">
+                                            <label className="text-[10px] font-black text-rose-500 uppercase">반찬 2</label>
+                                            <input name="slotE" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotE || ""} placeholder="입력..." />
+                                        </div>
+                                        <div className="space-y-1 bg-white p-3 rounded-2xl shadow-sm">
+                                            <label className="text-[10px] font-black text-rose-500 uppercase">반찬 3</label>
+                                            <input name="slotF" type="text" className="w-full border-none p-0 text-sm font-bold text-slate-700 outline-none focus:ring-0 bg-transparent" defaultValue={product?.lunchBoxConfig?.slotF || ""} placeholder="입력..." />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 h-40">
+                                        <div className="bg-white p-6 rounded-[2rem] shadow-sm flex flex-col justify-center border-l-8 border-slate-100">
+                                            <label className="text-sm font-black text-rose-500 uppercase mb-2">밥</label>
+                                            <input name="slotA" type="text" className="w-full border-none p-0 text-xl font-black text-slate-800 outline-none focus:ring-0 bg-transparent text-center" defaultValue={product?.lunchBoxConfig?.[`slotA`] || ""} placeholder="종류 입력" />
+                                        </div>
+                                        <div className="bg-white p-6 rounded-full shadow-sm flex flex-col justify-center border-4 border-slate-50 items-center overflow-hidden aspect-square mx-auto">
+                                            <label className="text-sm font-black text-rose-500 uppercase mb-2">국</label>
+                                            <input name="slotB" type="text" className="w-full border-none p-0 text-lg font-black text-slate-800 outline-none focus:ring-0 bg-transparent text-center" defaultValue={product?.lunchBoxConfig?.[`slotB`] || ""} placeholder="종류 입력" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <TabbedSaladGrid product={product} />
+                            )}
+                            <p className="text-center text-xs text-slate-400 mt-4 italic font-medium">※ 선택하신 용기 모양에 실시간으로 구성 정보가 매핑됩니다.</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="flex justify-end space-x-4">
                 <button
