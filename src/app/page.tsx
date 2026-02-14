@@ -55,6 +55,14 @@ export default async function HubPage() {
             icon: Calculator,
             color: "orange",
             tags: ["원가분석", "손익"]
+        },
+        {
+            href: "/admin/data",
+            label: "데이터 백업/복원",
+            description: "시스템 데이터 전체 백업 및 긴급 복구 센터",
+            icon: ShieldCheck,
+            color: "emerald",
+            tags: ["백업", "복원", "관리"]
         }
     ];
 
@@ -117,6 +125,7 @@ export default async function HubPage() {
                                     ${item.color === 'rose' ? 'bg-rose-500/10 text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.2)] group-hover:bg-rose-500 group-hover:text-white' : ''}
                                     ${item.color === 'violet' ? 'bg-violet-500/10 text-violet-400 shadow-[0_0_20px_rgba(139,92,246,0.2)] group-hover:bg-violet-500 group-hover:text-white' : ''}
                                     ${item.color === 'orange' ? 'bg-orange-500/10 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] group-hover:bg-orange-500 group-hover:text-white' : ''}
+                                    ${item.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)] group-hover:bg-emerald-500 group-hover:text-white' : ''}
                                 `}>
                                     <item.icon className="w-7 h-7" />
                                 </div>
